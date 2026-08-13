@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Adapter, AdapterPostableMessage, RawMessage } from 'chat';
 
-import { createChatSdkBridge, splitForLimit } from './chat-sdk-bridge.js';
+import { createChatSdkBridge, parseNcqCustomId, splitForLimit } from './chat-sdk-bridge.js';
 
 vi.mock('../webhook-server.js', () => ({
   registerWebhookAdapter: vi.fn(),
@@ -457,5 +457,27 @@ describe('createChatSdkBridge.deliver — display cards (send_card)', () => {
     expect(calls).toHaveLength(1);
     const msg = calls[0].message as { markdown?: string };
     expect(msg.markdown).toBe('plain hello');
+  });
+});
+
+describe('parseNcqCustomId', () => {
+  // Discord's adapter appends `\n<button.value>` to `button.id`. Left in the
+  // tail, that suffix fails resolveSelectedOption's digit test and every
+  // approval click — Approve included — resolves as a reject.
+  it('drops the value suffix Discord appends to custom_id', () => {
+    expect(parseNcqCustomId('ncq:appr-1786648505819-hhl47x:0\n0')).toEqual({
+      questionId: 'appr-1786648505819-hhl47x',
+      tail: '0',
+    });
+  });
+
+  it('parses a plain id with no value suffix', () => {
+    expect(parseNcqCustomId('ncq:appr-1:2')).toEqual({ questionId: 'appr-1', tail: '2' });
+  });
+
+  it('ignores custom_ids that are not ours or lack an index', () => {
+    expect(parseNcqCustomId('other:appr-1:0')).toEqual({});
+    expect(parseNcqCustomId('ncq:appr-1')).toEqual({});
+    expect(parseNcqCustomId(undefined)).toEqual({});
   });
 });

@@ -278,6 +278,29 @@ function resolveSelectedOption(
   return candidate;
 }
 
+/**
+ * Split a raw Discord `custom_id` back into `{ questionId, tail }`.
+ *
+ * Only the raw-gateway interaction path needs this — the Chat SDK's own
+ * `onAction` already hands us a decoded `actionId`/`value` pair. Discord's
+ * adapter encodes the button as `<button.id>\n<button.value>`
+ * (`encodeDiscordCustomId`), so with `id = ncq:<questionId>:<idx>` and
+ * `value = <idx>` the wire form is `ncq:<questionId>:<idx>\n<idx>`. Parsing
+ * without dropping the `\n` suffix leaves a tail of `"<idx>\n<idx>"`, which
+ * fails resolveSelectedOption's digit test and falls through to its literal
+ * branch — turning every click, Approve included, into a non-'approve' value.
+ */
+export function parseNcqCustomId(customId: string | undefined): {
+  questionId?: string;
+  tail?: string;
+} {
+  if (!customId?.startsWith('ncq:')) return {};
+  const id = customId.split('\n')[0];
+  const colonIdx = id.indexOf(':', 4); // after "ncq:"
+  if (colonIdx === -1) return {};
+  return { questionId: id.slice(4, colonIdx), tail: id.slice(colonIdx + 1) };
+}
+
 interface TerminalApprovalCard {
   title: string;
   question: string;
@@ -896,15 +919,7 @@ async function handleForwardedEvent(
       const interactionToken = interaction.token as string;
 
       // Parse the selected option from custom_id
-      let questionId: string | undefined;
-      let tail: string | undefined;
-      if (customId?.startsWith('ncq:')) {
-        const colonIdx = customId.indexOf(':', 4); // after "ncq:"
-        if (colonIdx !== -1) {
-          questionId = customId.slice(4, colonIdx);
-          tail = customId.slice(colonIdx + 1);
-        }
-      }
+      const { questionId, tail } = parseNcqCustomId(customId);
 
       // Update the card to show the selected answer and remove buttons
       const originalEmbeds =
