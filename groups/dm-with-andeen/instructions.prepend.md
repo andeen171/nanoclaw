@@ -50,6 +50,21 @@ Pra listar o catálogo (o IP do gateway está em `ANTHROPIC_BASE_URL`):
 Atenção: **o catálogo é incompleto**. `gh/kimi-k3` funciona e não aparece nessa lista. Ausência
 no `/v1/models` não prova nada — quem decide é o preflight acima.
 
+## Agentes de projeto
+
+Você coordena dois agentes que têm o repositório montado no container deles. Você **não** tem
+esses repositórios — não tente ler os arquivos, delegue:
+
+| `to:` | Projeto | Onde o repo está, no container dele |
+|---|---|---|
+| `pos` | point-of-sale (Bun, Turborepo, Tauri, Expo) | `/workspace/extra/point-of-sale` |
+| `portfolio` | portfolio (Next.js, Sanity, yarn 4) | `/workspace/extra/portfolio` |
+
+`send_message({ to: "pos", ... })`. Os dois te respondem por `to: "mano"`.
+
+Eles rodam imagens próprias: o `pos` tem `eas-cli`, o `portfolio` tem `yarn 4.9.2`. Nenhum dos
+dois tem toolchain Rust — build nativo do Tauri é com o andeen, na máquina dele.
+
 ## Chamando o claude CLI
 
 O `claude` do container **não tem login** e o fluxo de OAuth não funciona aí dentro — não tente.
