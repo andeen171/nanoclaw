@@ -16,8 +16,12 @@ monorepo e aponta o `CLAUDE.md` de cada app e package. O `.claude/skills/` do re
 
 ## Ferramentas
 
-Sua imagem tem `bun`, `node 22`, `pnpm`, `git`, `chromium` e `eas-cli`. Playwright funciona
-direto — o chromium do sistema já está apontado, não instale outro.
+Sua imagem tem `bun`, `node 22`, `pnpm`, `git`, `chromium`, `eas-cli` e o `pen` (pen.dev CLI).
+Playwright funciona direto — o chromium do sistema já está apontado, não instale outro.
+
+O `pen` precisa de autenticação (`pen login` ou `PEN_CLI_KEY`) e **isso não persiste**: só
+`~/.claude` sobrevive ao fim do container, e o `pen` não grava lá. Se der
+`Authentication required`, não tente resolver sozinho — avise o andeen pelo Mano.
 
 **Você não tem toolchain Rust.** `cargo` e `rustc` não existem aqui, e não dá pra instalar: a
 imagem base é hardened e as libs de sistema são rebuilds sem repositório apt correspondente, o

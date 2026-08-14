@@ -77,10 +77,10 @@ If the project's parent is missing, run `/manage-mounts` — do not hand-edit th
 
 ```bash
 ncl groups create --folder <slug> --name "<Display Name>"
-ncl groups config add-mount --id <group-id> --host <abs-path> --container <slug>
+ncl groups config add-mount --id <group-id> --host <abs-path> --container <slug> --rw
 ```
 
-The repo lands at `/workspace/extra/<slug>`. Add `--ro` for read-only.
+The repo lands at `/workspace/extra/<slug>`. **Read-only is the default** — pass `--rw` if the agent is meant to edit the project, and check the result: `--rw` is a request, and the mount still comes up read-only unless the allowlist root carries `allowReadWrite`.
 
 `add-mount` is `hostOnly` — an agent inside a container can never run it, by design. If an agent asked for this onboarding, this is the step the human has to run.
 
@@ -119,6 +119,21 @@ docker run --rm --entrypoint sh nanoclaw-agent-<slug-of-install>:<group-id> -c '
 ```
 
 Report the actual versions you saw. A group whose image build failed still has a stale `image_tag` and looks fine in the config.
+
+Then check the mount as the host will actually pass it — `buildMounts` is the real decision, and the stored config does not show the effective read-only flag:
+
+```bash
+node -e "
+Promise.all([import('./dist/db/connection.js'),import('./dist/config.js'),import('./dist/container-runner.js'),import('./dist/db/agent-groups.js'),import('./dist/container-config.js')])
+.then(([db,cfg,cr,ag,cc])=>{
+  db.initDb(require('path').join(cfg.DATA_DIR,'v2.db'));
+  const id='<group-id>', g=ag.getAgentGroup(id), conf=cc.materializeContainerJson(id);
+  for (const m of cr.buildMounts(g,{id:'probe',agent_group_id:id},conf,'claude',{env:{},mounts:[]}))
+    if (m.containerPath.includes('/extra/')) console.log(m.hostPath,'->',m.containerPath,'readonly='+!!m.readonly);
+});"
+```
+
+If a container is already running, `docker inspect <name> -f '{{range .Mounts}}{{.Source}} {{.Destination}} rw={{.RW}}{{"\n"}}{{end}}'` answers the same question against live truth.
 
 ## 8. Make the group reachable
 
