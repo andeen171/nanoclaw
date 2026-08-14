@@ -11,7 +11,9 @@ commit por assunto, para poder ser rebaseado ou descartado individualmente.
 | `fix(chat-sdk-bridge)` | Aprovação por Discord: todo clique virava reject | Some quando o upstream aceitar o PR — aí é só dropar |
 | `feat(providers)` | Roteia o agent-runner por um gateway OmniRoute rodando como container irmão | Mantém |
 | `chore(channels)` | Adapters Discord + WhatsApp instalados por skill | **Não rebaseie** — veja abaixo |
-| `chore(groups)` | Instruções permanentes do agente "Mano" | Mantém |
+| `chore(groups)` (×2) | Instruções permanentes do Mano, do POS e do Portfolio | Mantém |
+| `feat(skills)` | `/onboard-project` — mapeia um projeto da máquina pra um agent group | Mantém |
+| `chore(container/skills)` | Skills superpowers + ponytail vendoradas (MIT) | Mantém; ver `container/skills/NOTICE.md` |
 | `chore` (gitignore) | `.serena/` | Mantém |
 
 Não versionado, e é de propósito: `.env` (credenciais), `data/`, `logs/`, e o resto de
