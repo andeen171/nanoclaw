@@ -14,6 +14,9 @@ commit por assunto, para poder ser rebaseado ou descartado individualmente.
 | `chore(groups)` (×2) | Instruções permanentes do Mano, do POS e do Portfolio | Mantém |
 | `feat(skills)` | `/onboard-project` — mapeia um projeto da máquina pra um agent group | Mantém |
 | `chore(container/skills)` | Skills superpowers + ponytail vendoradas (MIT) | Mantém; ver `container/skills/NOTICE.md` |
+| `feat(dashboard)` | `/add-dashboard` — pusher + wiring em `src/index.ts` | Mantém; o wiring é 3 linhas em `main()` |
+| `feat(scripts)` | `refresh-linear-token.sh` — renova o token do MCP do Linear | Mantém |
+| `fix(ncl)` | `--rw` em `groups config add-mount` | Some se o upstream aceitar o PR |
 | `chore` (gitignore) | `.serena/` | Mantém |
 
 Não versionado, e é de propósito: `.env` (credenciais), `data/`, `logs/`, e o resto de
@@ -49,4 +52,13 @@ Este install pressupõe, fora do repo:
   `/v1/messages` na porta 20128, com as credenciais dos providers (`cc/`, `gh/`, `oc/`).
 - `ANTHROPIC_BASE_URL=http://omniroute:20128` no `.env` — o hostname nu é resolvido pro
   IP do bridge no spawn (`src/providers/claude.ts`).
-- OneCLI para os demais segredos.
+- OneCLI para os demais segredos, incluindo o token do MCP do Linear
+  (host-pattern `mcp.linear.app`, injetado no fio — nunca em `container.json`).
+- Timer systemd de usuário `nanoclaw-linear-token.timer`, semanal, chamando
+  `scripts/refresh-linear-token.sh`. O grant client_credentials do Linear dá 30
+  dias e não tem refresh token; sem isso o MCP começa a dar 401 um mês depois de
+  configurado.
+- `~/.local/share/nanoclaw-bin/rtk` — cópia do binário do host, montada
+  read-only nos grupos de projeto. Não dá pra montar `~/.local/bin` direto: é
+  padrão bloqueado em `mount-security` (o host executa `onecli` e `claude` de
+  lá). Ao atualizar o rtk no host, recopie.
