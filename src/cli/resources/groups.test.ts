@@ -258,6 +258,33 @@ describe('groups config add-mount / remove-mount (host-only)', () => {
     expect(rm.ok).toBe(true);
     expect(JSON.parse(getContainerConfig(GID)!.additional_mounts)).toEqual([]);
   });
+
+  // validateMount grants read-write only on `readonly === false`; an absent key
+  // is not a request for it. Without --rw every CLI-created mount came up
+  // read-only regardless of the allowlist root's allowReadWrite.
+  it('--rw writes readonly:false, and the default stays read-only', async () => {
+    const GID = 'ag-mount-rw';
+    createAgentGroup({ id: GID, name: 'm', folder: 'm2', agent_provider: null, created_at: now() });
+    ensureContainerConfig(GID);
+
+    await dispatch(
+      {
+        id: 'w1',
+        command: 'groups-config-add-mount',
+        args: { id: GID, host: '/dev/repo', container: 'repo', rw: true },
+      },
+      { caller: 'host' },
+    );
+    await dispatch(
+      { id: 'w2', command: 'groups-config-add-mount', args: { id: GID, host: '/dev/other', container: 'other' } },
+      { caller: 'host' },
+    );
+
+    expect(JSON.parse(getContainerConfig(GID)!.additional_mounts)).toEqual([
+      { hostPath: '/dev/repo', containerPath: 'repo', readonly: false },
+      { hostPath: '/dev/other', containerPath: 'other' },
+    ]);
+  });
 });
 
 describe('groups CLI MCP config', () => {

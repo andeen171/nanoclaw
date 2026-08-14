@@ -523,7 +523,9 @@ registerResource({
       description:
         "Mount a host directory into a group's containers. OPERATOR-ONLY — never runnable from " +
         'inside a container (mounting host paths is a filesystem-access boundary). Requires ' +
-        '`ncl groups restart` to take effect. Use --id <group-id> --host <host-path> --container <container-path> [--ro].',
+        '`ncl groups restart` to take effect. Use --id <group-id> --host <host-path> --container <container-path> ' +
+        '[--rw|--ro]. Read-only is the default; --rw additionally requires the allowlist root to carry ' +
+        'allowReadWrite, or the mount is forced read-only at spawn.',
       handler: async (args) => {
         const id = args.id as string;
         if (!id) throw new Error('--id is required');
@@ -534,10 +536,15 @@ registerResource({
         const row = getContainerConfig(id);
         if (!row) throw new Error(`No container config for group: ${id}`);
 
+        // validateMount grants read-write only on `readonly === false` — an absent
+        // key is not a request for it. Without --rw there was no way to express
+        // that through this command, so every CLI-created mount came up read-only
+        // no matter what the allowlist root permitted. The allowlist still has the
+        // final say: --rw is a request, not a grant.
         const mount: AdditionalMountConfig = {
           hostPath,
           containerPath,
-          ...(args.ro || args.readonly ? { readonly: true } : {}),
+          ...(args.ro || args.readonly ? { readonly: true } : args.rw ? { readonly: false } : {}),
         };
         const existing = JSON.parse(row.additional_mounts) as AdditionalMountConfig[];
         if (!existing.some((m) => m.hostPath === hostPath && m.containerPath === containerPath)) {
