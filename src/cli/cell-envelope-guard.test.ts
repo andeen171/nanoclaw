@@ -187,6 +187,25 @@ describe('cell envelope branch in commandDecide', () => {
     expect(d.effect).toBe('hold');
   });
 
+  // Regressão do e2e de mitose (appr-1787003740130): o guard decide ANTES do
+  // normalizeArgs do crud.ts, então o frame real do container chega com a
+  // chave kebab "agent-group-id" — não "agent_group_id" como o caso 12 assume.
+  // Sem tratar o kebab, toda destinations-add/remove de célula caía no HOLD.
+  it('15. destinations-add com "agent-group-id" (kebab, shape real do frame) de célula → allow', () => {
+    writeEnvelope();
+    seedCell('ag-qa-pos-kebab', 'qa-pos-kebab');
+    const d = commandGuard('destinations-add').decide(
+      fromMano({
+        'agent-group-id': 'ag-qa-pos-kebab',
+        'local-name': 'mano',
+        'target-type': 'agent',
+        'target-id': 'ag-mano',
+      }),
+    );
+    expect(d.effect).toBe('allow');
+    expect(d.reason).toBe(CELL_ENVELOPE_ALLOW_REASON);
+  });
+
   // Trava typo futuro em CELL_FAMILY_COMMANDS: um nome errado no Set nunca
   // bate com resolveCellTarget e hoje falha silencioso em modo seguro (cai no
   // hold normal) — esse loop faz o typo dar teste vermelho em vez disso.

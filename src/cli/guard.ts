@@ -71,12 +71,12 @@ function resolveCellTarget(
     const role = cellRoleOf(folder, env);
     return role ? { role } : null;
   }
-  const id =
-    typeof payload.id === 'string'
-      ? payload.id
-      : typeof payload.agent_group_id === 'string'
-        ? payload.agent_group_id
-        : null;
+  // O guard decide antes do normalizeArgs do crud.ts — frames vindos do
+  // container ainda carregam chaves kebab ("agent-group-id"), como o check de
+  // GROUP_WIRING_UPDATE_ARGS abaixo já trata. Aceitar só o snake segurava
+  // toda destinations-add/remove de célula no HOLD (appr-1787003740130).
+  const rawId = payload.id ?? payload.agent_group_id ?? payload['agent-group-id'];
+  const id = typeof rawId === 'string' ? rawId : null;
   if (!id) return null;
   const g = getDb().prepare('SELECT name, folder FROM agent_groups WHERE id = ?').get(id) as
     | { name: string; folder: string }
