@@ -5,6 +5,7 @@ import type Database from 'better-sqlite3';
 import { GROUPS_DIR, TIMEZONE } from '../../config.js';
 import { resolveGroupTimezone } from '../../container-config.js';
 import { getAgentGroup } from '../../db/agent-groups.js';
+import { getContainerConfig } from '../../db/container-configs.js';
 import {
   findTaskSessions,
   getActiveSessions,
@@ -74,15 +75,25 @@ function statusFilter(args: Record<string, unknown>): TaskStatus | undefined {
   return status;
 }
 
+function isGlobalAgent(ctx: CallerContext): boolean {
+  return ctx.caller === 'agent' && (getContainerConfig(ctx.agentGroupId)?.cli_scope ?? 'group') === 'global';
+}
+
 function groupArg(args: Record<string, unknown>, ctx: CallerContext): string | undefined {
-  if (ctx.caller === 'agent') return ctx.agentGroupId;
-  return str(args.group) ?? str(args.agent_group_id);
+  const explicit = str(args.group) ?? str(args.agent_group_id);
+  if (ctx.caller === 'agent') {
+    // Escopo 'group' nunca chega aqui com arg cruzado (o guard nega antes).
+    // 'global' honra o --group explícito (contrato "unrestricted") — a
+    // absorção de células cancela tasks delas sem exigir cooperação da célula.
+    return explicit && isGlobalAgent(ctx) ? explicit : ctx.agentGroupId;
+  }
+  return explicit;
 }
 
 function ownSession(sessionId: string, ctx: CallerContext): ScopedSession {
   const session = getSession(sessionId);
   if (!session) throw new Error(`session not found: ${sessionId}`);
-  if (ctx.caller === 'agent' && session.agent_group_id !== ctx.agentGroupId) {
+  if (ctx.caller === 'agent' && session.agent_group_id !== ctx.agentGroupId && !isGlobalAgent(ctx)) {
     throw new Error(`session not found: ${sessionId}`);
   }
   return { id: session.id, agent_group_id: session.agent_group_id };

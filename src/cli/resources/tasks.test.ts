@@ -22,6 +22,7 @@ vi.mock('../../container-runner.js', () => ({
 const TEST_DIR = '/tmp/nanoclaw-test-cli-tasks';
 
 import { initTestDb, closeDb, runMigrations, createAgentGroup } from '../../db/index.js';
+import { ensureContainerConfig, updateContainerConfigScalars } from '../../db/container-configs.js';
 import { createSession, findSessionByAgentGroup, getSessionsByAgentGroup, taskThreadId } from '../../db/sessions.js';
 import { countDueMessages } from '../../db/session-db.js';
 import { inboundDbPath, initSessionFolder } from '../../session-manager.js';
@@ -73,6 +74,43 @@ describe('tasks CLI resource', () => {
   afterEach(() => {
     closeDb();
     if (fs.existsSync(TEST_DIR)) fs.rmSync(TEST_DIR, { recursive: true });
+  });
+
+  // Regressão do e2e de mitose: o orquestrador (cli_scope global) rodou
+  // `ncl tasks create --group <célula>` e a task caiu no grupo DELE — groupArg
+  // pinava todo caller agent no próprio grupo, ignorando o --group explícito
+  // que o contrato de `global` ("unrestricted", CLAUDE.md) manda honrar. A
+  // absorção depende disso: cancelar tasks da célula não pode exigir a
+  // cooperação da célula.
+  it('create com --group explícito de agent GLOBAL cria a task no grupo alvo', async () => {
+    ensureContainerConfig('ag-1', 'claude');
+    updateContainerConfigScalars('ag-1', { cli_scope: 'global' });
+    const resp = await dispatch(
+      {
+        id: 'req-g1',
+        command: 'tasks-create',
+        args: { group: 'ag-2', prompt: 'loop da célula', process_after: '2026-01-15T09:00:00Z' },
+      },
+      agentCtx(),
+    );
+    expect(resp.ok).toBe(true);
+    if (!resp.ok) return;
+    const created = resp.data as { session_id: string };
+    expect(getSessionsByAgentGroup('ag-2').some((s) => s.id === created.session_id)).toBe(true);
+  });
+
+  it('create com --group explícito de agent com escopo GROUP é negado pelo guard (cross-group arg denial)', async () => {
+    ensureContainerConfig('ag-1', 'claude');
+    updateContainerConfigScalars('ag-1', { cli_scope: 'group' });
+    const resp = await dispatch(
+      {
+        id: 'req-g2',
+        command: 'tasks-create',
+        args: { group: 'ag-2', prompt: 'tentativa cross-group', process_after: '2026-01-15T09:00:00Z' },
+      },
+      agentCtx(),
+    );
+    expect(resp.ok).toBe(false);
   });
 
   it('create writes the task into the group system session, not the caller chat session', async () => {
