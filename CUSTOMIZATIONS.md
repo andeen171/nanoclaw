@@ -72,7 +72,7 @@ Este install pressupõe, fora do repo:
 - `ANTHROPIC_BASE_URL=http://omniroute:20128` no `.env` — o hostname nu é resolvido pro
   IP do bridge no spawn (`src/providers/claude.ts`).
 - OneCLI para os demais segredos, incluindo o token do MCP do Linear
-  (host-pattern `mcp.linear.app`, injetado no fio — nunca em `container.json`).
+  (host-pattern `api.linear.app`, injetado no fio — nunca em `container.json`; o MCP e os tick scripts das células dependem dessa injeção).
   **O gateway binda em `172.17.0.1`, não no default `127.0.0.1`** — é como os
   containers o alcançam (`ONECLI_URL` no `.env`). Esse bind vem de env var, não está
   persistido: qualquer `docker compose up` em `~/.onecli` sem
