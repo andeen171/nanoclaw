@@ -16,8 +16,8 @@ commit por assunto, para poder ser rebaseado ou descartado individualmente.
 | `chore(container/skills)` | Skills superpowers + ponytail vendoradas (MIT) | Mantém; ver `container/skills/NOTICE.md` |
 | `feat(dashboard)` | `/add-dashboard` — pusher + wiring em `src/index.ts` | Mantém; o wiring é 3 linhas em `main()` |
 | `feat(scripts)` | `refresh-linear-token.sh` — renova o token do MCP do Linear | Mantém |
-| `fix(ncl)` | `--rw` em `groups config add-mount` | Some se o upstream aceitar o PR |
-| `feat(guard)` (×3) | Envelope celular: autonomia de mitose/absorção dentro de limites no host | Mantém |
+| `fix(ncl)` (×2) | `--rw` em `groups config add-mount`; `tasks` honra `--group` explícito de agente global | Somem se o upstream aceitar os PRs |
+| `feat(guard)` (×4) | Envelope celular: autonomia de mitose/absorção dentro de limites no host (inclui fix do frame kebab) | Mantém |
 | `feat(genomes)` + `feat(projects)` | Genomas de papel, ticks, perfis de projeto (organização celular) | Mantém |
 | `chore` (gitignore) | `.serena/` | Mantém |
 
