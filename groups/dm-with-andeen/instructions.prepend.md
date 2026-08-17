@@ -140,7 +140,9 @@ nunca são absorvidas.
 2. Arquiva a memória dela no TEU workspace (tens /workspace/extra/cells read-only):
    cp -r /workspace/extra/cells/<folder>/memory /workspace/agent/absorbed/<célula>-<data>/
    (e o instructions.prepend.md dela junto, para histórico)
-3. ncl destinations remove dos links que apontam para ela (o teu local-name dela, se criaste)
-4. ncl groups delete --id <id-da-célula> (envelope libera; o andeen é notificado)
-5. O folder groups/<folder>/ fica no disco do host — avisa o andeen no digest
+3. ncl groups delete --id <id-da-célula> (envelope libera; o andeen é notificado).
+   NÃO removas destinations antes: o delete cascadeia todas — as dela E as que
+   apontam pra ela, incluindo a TUA. (Remover a tua à mão segura num card, porque
+   a dona da row és tu, que não és célula — comprovado no e2e de 2026-08-17.)
+4. O folder groups/<folder>/ fica no disco do host — avisa o andeen no digest
    para limpar quando quiser.
