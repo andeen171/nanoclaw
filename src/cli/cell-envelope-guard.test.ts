@@ -24,6 +24,7 @@ import { ensureContainerConfig, updateContainerConfigScalars } from '../db/conta
 import { closeDb, createAgentGroup, initTestDb, runMigrations } from '../db/index.js';
 import { CELL_ENVELOPE_ALLOW_REASON } from './cell-envelope.js';
 import { agentsCreate } from '../modules/agent-to-agent/guard.js';
+import { CELL_FAMILY_COMMANDS } from './guard.js';
 import { commandGuard } from './registry.js';
 import type { GuardInput } from '../guard/index.js';
 
@@ -156,6 +157,43 @@ describe('cell envelope branch in commandDecide', () => {
     writeEnvelope();
     const d = commandGuard('groups-create').decide({ actor: { kind: 'host' }, payload: {} });
     expect(d.effect).toBe('allow');
+  });
+
+  // destinations-add resolve por agent_group_id (não id) — único membro da
+  // família com essa chave; agent_destinations é a tabela de autorização real
+  // de entrega (src/delivery.ts:334, agent-route.ts), por isso ganha caso
+  // dedicado em vez de assumir que se comporta como o caso 7.
+  it('12. destinations-add com agent_group_id de célula, agent global, envelope com folga → allow', () => {
+    writeEnvelope();
+    seedCell('ag-dev-dest', 'dev-dest');
+    const d = commandGuard('destinations-add').decide(
+      fromMano({ agent_group_id: 'ag-dev-dest', local_name: 'sales', target_type: 'channel', target_id: 'mg-1' }),
+    );
+    expect(d.effect).toBe('allow');
+    expect(d.reason).toBe(CELL_ENVELOPE_ALLOW_REASON);
+  });
+
+  it('13. destinations-add com agent_group_id NÃO-célula, agent global → hold (comportamento de hoje)', () => {
+    writeEnvelope();
+    seedCell('ag-not-cell-dest', 'meu-projeto-dest');
+    const d = commandGuard('destinations-add').decide(
+      fromMano({
+        agent_group_id: 'ag-not-cell-dest',
+        local_name: 'sales',
+        target_type: 'channel',
+        target_id: 'mg-1',
+      }),
+    );
+    expect(d.effect).toBe('hold');
+  });
+
+  // Trava typo futuro em CELL_FAMILY_COMMANDS: um nome errado no Set nunca
+  // bate com resolveCellTarget e hoje falha silencioso em modo seguro (cai no
+  // hold normal) — esse loop faz o typo dar teste vermelho em vez disso.
+  it('14. cada comando de CELL_FAMILY_COMMANDS está registrado no catálogo real (commandGuard não lança)', () => {
+    for (const name of CELL_FAMILY_COMMANDS) {
+      expect(() => commandGuard(name)).not.toThrow();
+    }
   });
 });
 

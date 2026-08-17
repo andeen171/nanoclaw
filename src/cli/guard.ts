@@ -37,7 +37,7 @@ const GROUP_WIRING_UPDATE_ARGS = new Set(['id', 'agent_group_id', 'group', 'help
  * destinations.ts. `groups-config-get` fica de fora — já é `access: 'open'`,
  * não passa pelo hold que o envelope existe para contornar.
  */
-const CELL_FAMILY_COMMANDS = new Set([
+export const CELL_FAMILY_COMMANDS = new Set([
   'groups-create',
   'groups-delete',
   'groups-restart',
