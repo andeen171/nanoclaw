@@ -17,7 +17,7 @@
 import path from 'path';
 
 import { GROUPS_DIR } from '../../config.js';
-import { cellRoleOf, readCellEnvelope } from '../../cli/cell-envelope.js';
+import { cellRoleOf, countCells, readCellEnvelope } from '../../cli/cell-envelope.js';
 import { createAgentGroup, getAgentGroup, getAgentGroupByFolder } from '../../db/agent-groups.js';
 import { getContainerConfig } from '../../db/container-configs.js';
 import { getSession } from '../../db/sessions.js';
@@ -207,16 +207,24 @@ async function performCreateAgent(
   // (cli_scope global) cria células autonomamente — a guard's agents.create
   // decision (./guard.ts) já dá ALLOW(CELL_ENVELOPE_ALLOW_REASON) sem
   // aprovação, mas essa reason não chega até aqui (o handler guardado só
-  // recebe content/session, não a decision). Equivalente na prática: só se
-  // chega a este ponto com allow do envelope quando cli_scope é global E o
-  // nome bate um papel do envelope — a mesma condição do guard, replicada
-  // (spec 2026-08-17-cell-org-design §4). Fire-and-forget: notificação
-  // perdida não pode desfazer a criação que já aconteceu.
+  // recebe content/session, não a decision). Replica a condição completa do
+  // guard (cli_scope global + nome bate papel + dentro dos limites), não só
+  // parte dela — um create que ESTOUROU o envelope também chega até aqui via
+  // replay de aprovação manual (HOLD → admin aprova), e nesse caso a
+  // mensagem "dentro do envelope" seria enganosa (spec 2026-08-17-cell-org-
+  // design §4). Fire-and-forget: notificação perdida não pode desfazer a
+  // criação que já aconteceu.
   if ((sourceConfig?.cli_scope ?? 'group') === 'global') {
     const env = readCellEnvelope();
     const role = env ? cellRoleOf(localName, env) : null;
-    if (role) {
-      void notifyOwnerCellEvent(formatCellEvent('create', localName, 'via create_agent (a2a) pelo orquestrador'));
+    if (env && role) {
+      // Off-by-one deliberado: createAgentGroup já rodou acima, então o grupo
+      // novo já está na contagem — por isso <=, não +1 como no guard (que
+      // decide ANTES de o grupo existir).
+      const { total, byRole } = countCells(env);
+      if (total <= env.max_cells && (byRole[role] ?? 0) <= env.max_per_role) {
+        void notifyOwnerCellEvent(formatCellEvent('create', localName, 'via create_agent (a2a) pelo orquestrador'));
+      }
     }
   }
 }
