@@ -15,6 +15,7 @@ board no Linear, loops agênticos com tick a custo zero, e multiplicação
 | Fluxo de trabalho | **Board no Linear (TTK)** como fonte de verdade + um único atalho direto dev↔qa por destinations |
 | Governança da mitose | Mano autônomo **dentro de envelope duro no host**; dentro → notifica; fora → card de aprovação. Célula pode *pedir* clone |
 | Acesso do Mano | `~/dev` rw + `groups/` ro + `ncl` global (já tem). **Sem socket do Docker** — rejeitado por segurança |
+| Review adversarial | Empreitadas grandes (label `major`) recebem passada adversarial do qa com `gh/gpt-5.6-terra` em effort máximo — família diferente do autor, quebra a monocultura |
 | Modelos | Mapa por papel abaixo; Mano sai do cc/ (evita interrupções por rate limit); cc/ fica com arch, design e dev; tudo passa por preflight real |
 | Tier self-hosted da pesquisa | Fora de escopo — `openrouter/` está sem créditos, sem caminho vivo p/ DeepSeek/Qwen local |
 
@@ -66,6 +67,18 @@ SDD**: spec + plano de implementação (committados no repo do projeto, em
 executam → qa revisa. O genoma do arch usa as skills já vendoradas nos
 containers (`brainstorming`, `writing-plans`) como método. Mudança pequena
 (bugfix óbvio) pode pular o arch: po promove direto com `role:dev`.
+
+**Review adversarial (empreitadas grandes):** issues com o label `major`
+(colocado pelo Mano na triagem ou pelo arch ao especificar) recebem, além da
+review normal do qa, uma **passada adversarial com `gh/gpt-5.6-terra`** no
+effort máximo disponível — invocada pelo qa via harness claude-CLI, com prompt
+de ataque (edge cases, modos de falha, alternativa mais simples, segurança).
+Vale em dois pontos do pipeline: a spec/plano do arch antes do handoff pros
+devs, e o PR final antes do Done. Com autor em Claude, qa-base em Kimi e
+adversarial em GPT, são três famílias de modelo no caminho de uma empreitada
+grande — o review deixa de compartilhar os pontos cegos do autor. Critério de
+`major` no genoma do qa também por tamanho: diff >400 linhas ou mudança de
+arquitetura ganha a passada mesmo sem o label.
 
 Mano faz a triagem: pedidos teus no Discord viram issues. Handoff entre papéis =
 mover o card. Você observa tudo abrindo o Linear.
@@ -149,7 +162,7 @@ ativa.
 | Mano | `gh/gemini-3.5-flash` | orquestração não-especializada: rápido, barato, sem interrupção de rate limit no chat |
 | arch | `cc/claude-opus-5` | spec/plano/arquitetura = fronteira; uso em rajada, baixa frequência |
 | dev | `cc/claude-sonnet-5` base; **escalação a `cc/claude-opus-5` via harness claude-CLI** p/ task pesada | modelo de grupo é fixo no NanoClaw — o "depende da task" vive no genoma: a receita `ANTHROPIC_MODEL=cc/claude-opus-5 claude -p` (já validada no Mano) escala quando a issue exige |
-| qa | `gh/kimi-k2.7-code` | `kimi-k3` só existe no `openrouter/` morto; k2.7-code é o vivo mais próximo, na cota Copilot |
+| qa | `gh/kimi-k2.7-code` base; **adversarial `gh/gpt-5.6-terra`** (effort máximo) p/ issues `major` | `kimi-k3` só existe no `openrouter/` morto; k2.7-code é o vivo mais próximo. Terra não tem sufixo `-xhigh` no catálogo — o preflight determina como (e quanto) effort é controlável via parâmetro |
 | po | `gh/gemini-3.1-pro-preview` | long context p/ PRD/backlog |
 | design | `cc/claude-opus-5` | uso pesado do Pencil — qualidade visual de fronteira |
 | devops | `gh/gpt-5.6-*` (preflight escolhe entre sol/terra/luna) | CLI/agentic; logs volumosos → `gh/gemini-3.5-flash` |
