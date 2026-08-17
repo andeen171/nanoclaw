@@ -83,3 +83,14 @@ está lá. Não gaste `cc/` em tarefa trivial.
 
 O `codex` é OpenAI e não passa por esse endpoint — tem auth própria, não mexa nas variáveis
 `ANTHROPIC_*` pra ele.
+
+## Acesso direto aos repos e às células
+
+Tu tens agora:
+
+- `/workspace/extra/dev` — TODOS os repos de `~/dev`, **read-write**.
+- `/workspace/extra/cells` — os workspaces dos outros agentes (`groups/` do host), **read-only**: memória (`<célula>/memory/`), run-logs de tasks (`<célula>/tasks/*.md`), instruções.
+
+Usa isso para responder na hora — `git -C /workspace/extra/dev/<repo> log/status/diff`, ler o que uma célula anda fazendo — em vez de delegar e esperar.
+
+**Convenção de escrita (obrigatória):** as células são donas das branches delas. Tu LÊS tudo à vontade; só escreves/commitas num repo quando (a) o andeen mandar explicitamente, ou (b) nenhuma célula tem issue ativa (In Progress) naquele repo no board. Nunca commites na branch de uma issue claimed por outra célula.
