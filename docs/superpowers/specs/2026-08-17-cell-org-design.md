@@ -11,11 +11,11 @@ board no Linear, loops agênticos com tick a custo zero, e multiplicação
 | Questão | Decisão |
 |---------|---------|
 | Mapeamento papel×projeto | **Células-base company-wide + mitose sob demanda** (célula-mãe por papel; clone escopado a projeto quando a carga pede) |
-| Elenco v1 | dev, qa, po, design, devops + Mano orquestrador. Sem célula "arquiteto" (é o Mano); tech writer dobra no po |
+| Elenco v1 | dev, qa, po, design, devops, **arch** + Mano orquestrador. Tech writer dobra no po |
 | Fluxo de trabalho | **Board no Linear (TTK)** como fonte de verdade + um único atalho direto dev↔qa por destinations |
 | Governança da mitose | Mano autônomo **dentro de envelope duro no host**; dentro → notifica; fora → card de aprovação. Célula pode *pedir* clone |
 | Acesso do Mano | `~/dev` rw + `groups/` ro + `ncl` global (já tem). **Sem socket do Docker** — rejeitado por segurança |
-| Modelos | Mapa por papel abaixo; cc/ só para Mano e dev (espalha rate limit); tudo passa por preflight real |
+| Modelos | Mapa por papel abaixo; Mano sai do cc/ (evita interrupções por rate limit); cc/ fica com arch, design e dev; tudo passa por preflight real |
 | Tier self-hosted da pesquisa | Fora de escopo — `openrouter/` está sem créditos, sem caminho vivo p/ DeepSeek/Qwen local |
 
 ## 1. Anatomia
@@ -33,7 +33,7 @@ Três conceitos, três lugares:
 
 | Célula | Tipo | Mounts | cli_scope |
 |--------|------|--------|-----------|
-| dev, qa, devops | base | `~/dev` **rw** | group |
+| dev, qa, devops, arch | base | `~/dev` **rw** | group |
 | po, design | base | `~/dev` **ro** | group |
 | `<papel>-<projeto>` (ex. dev-pos) | especializada | só o repo do projeto | group |
 | Mano | orquestrador | `~/dev` rw + `groups/` ro | global |
@@ -51,12 +51,21 @@ Convenções sobre o workflow default do time TTK (org `andeen`):
 
 ```
 fila do po      = Backlog (grooming)
+fila do arch    = Todo + label role:arch (feature groomed, sem spec)
 fila do dev     = Todo + label role:dev
 fila do design  = Todo + label role:design
 fila do devops  = Todo + label role:devops
 fila do qa      = In Review (tudo em review é dele)
 projeto         = campo Project do Linear (POS, Portfolio, ...)
 ```
+
+**Pipeline SDD:** pedido teu → Mano tria e cria a issue → po refina no Backlog
+(user story/PRD) e promove com `role:arch` → **arch faz a primeira parte do
+SDD**: spec + plano de implementação (committados no repo do projeto, em
+`docs/specs/`) e quebra em sub-issues `role:dev` encadeadas na issue-mãe → devs
+executam → qa revisa. O genoma do arch usa as skills já vendoradas nos
+containers (`brainstorming`, `writing-plans`) como método. Mudança pequena
+(bugfix óbvio) pode pular o arch: po promove direto com `role:dev`.
 
 Mano faz a triagem: pedidos teus no Discord viram issues. Handoff entre papéis =
 mover o card. Você observa tudo abrindo o Linear.
@@ -137,17 +146,22 @@ ativa.
 
 | Célula | Modelo | Racional |
 |--------|--------|----------|
-| Mano | `cc/claude-opus-5` | fronteira, fala com o dono (como já é) |
-| dev | `cc/claude-sonnet-5` | SWE; pesado → assinatura cc/ |
-| qa | `gh/claude-sonnet-5` | mesma classe, cota Copilot Pro+ — espalha carga |
+| Mano | `gh/gemini-3.5-flash` | orquestração não-especializada: rápido, barato, sem interrupção de rate limit no chat |
+| arch | `cc/claude-opus-5` | spec/plano/arquitetura = fronteira; uso em rajada, baixa frequência |
+| dev | `cc/claude-sonnet-5` base; **escalação a `cc/claude-opus-5` via harness claude-CLI** p/ task pesada | modelo de grupo é fixo no NanoClaw — o "depende da task" vive no genoma: a receita `ANTHROPIC_MODEL=cc/claude-opus-5 claude -p` (já validada no Mano) escala quando a issue exige |
+| qa | `gh/kimi-k2.7-code` | `kimi-k3` só existe no `openrouter/` morto; k2.7-code é o vivo mais próximo, na cota Copilot |
 | po | `gh/gemini-3.1-pro-preview` | long context p/ PRD/backlog |
-| design | `gh/claude-sonnet-4.6` | frontend + visão sem disputar cc/ |
+| design | `cc/claude-opus-5` | uso pesado do Pencil — qualidade visual de fronteira |
 | devops | `gh/gpt-5.6-*` (preflight escolhe entre sol/terra/luna) | CLI/agentic; logs volumosos → `gh/gemini-3.5-flash` |
 
 Regras: catálogo do OmniRoute mente — **preflight real** (tool-call + thinking)
-antes de cada modelo valer; resultado registrado com data. 429 crônico no cc/ →
-dev desce p/ `gh/claude-sonnet-5` (uma linha de config). cc/ fica restrito a
-Mano+dev para não repetir o 429 de 2026-08-14.
+antes de cada modelo valer; resultado registrado com data. O preflight do
+`gh/gemini-3.5-flash` é o mais crítico: Mano vive de tool-calling (ncl, MCPs) e
+flash precisa provar isso antes da troca. Consumidores do cc/ agora: arch,
+design e a escalação do dev — carga em rajada, não contínua; 429 crônico →
+o papel afetado desce p/ equivalente `gh/` (uma linha de config). O Mano
+mantém no genoma a receita de escalação via claude-CLI para raciocínio pesado
+pontual.
 
 ## 7. Falhas
 
@@ -156,7 +170,7 @@ Mano+dev para não repetir o 429 de 2026-08-14.
 | Linear fora do ar | script falha → `wakeAgent=false` (fail-closed nativo) |
 | Token Linear expira | timer semanal existente, atualizando os dois host-patterns |
 | Célula morre no meio de issue | claim órfão → supervisor devolve pro Todo em <1 dia útil |
-| 429 no cc/ | SDK re-tenta; crônico → troca de modelo do dev |
+| 429 no cc/ | SDK re-tenta; crônico → papel afetado desce p/ equivalente `gh/`; Mano não é afetado (está no `gh/`) |
 | Claim duplicado | re-read corta; custo = um começo duplicado |
 | Mitose descontrolada | impossível estruturalmente: guard no host, envelope fora do alcance de containers |
 
@@ -167,15 +181,14 @@ Ordem: **B → A → C** (cada fase útil sozinha):
 1. **B — acesso do Mano**: mounts (`~/dev` rw, `groups/` ro + allowlist),
    convenção de escrita no genoma. Verifica: Mano roda `git log` num repo sem
    delegar.
-2. **A — fundação**: genomas, perfis, 5 células-base, conversão
-   POS→dev-pos / Portfolio→dev-portfolio, labels no board, host-pattern novo no
-   OneCLI, preflight dos 6 modelos. Verifica: issue de teste `role:dev` num
-   sandbox percorre claim→branch→review→done com o loop de UMA célula antes de
-   ligar o cron das demais.
+2. **A — fundação**: genomas, perfis, 6 células-base, conversão
+   POS→dev-pos / Portfolio→dev-portfolio, troca do modelo do Mano, labels no
+   board, host-pattern novo no OneCLI, preflight dos 7 modelos. Verifica: issue
+   de teste `role:dev` num sandbox percorre claim→branch→review→done com o loop
+   de UMA célula antes de ligar o cron das demais.
 3. **C — orquestração**: loops de todas as células, supervisor, guard+envelope
    (unit + conformance), runbook de mitose executado uma vez na mão antes de
    virar skill do Mano.
 
-Fora de escopo desta spec: célula de arquitetura, tier self-hosted, socket do
-Docker no container, dashboards novos (o `/add-dashboard` existente já mostra
-grupos/sessões).
+Fora de escopo desta spec: tier self-hosted, socket do Docker no container,
+dashboards novos (o `/add-dashboard` existente já mostra grupos/sessões).
