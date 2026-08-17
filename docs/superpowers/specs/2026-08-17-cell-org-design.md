@@ -124,8 +124,9 @@ Decide e executa sempre o Mano.
 projeto → task de loop → destinations (atalho qa, rota ao Mano) → agente OneCLI.
 
 **Absorção:** célula sem issue tocada em `idle_days` → memória arquivada em
-`absorbed/<célula>-<data>/` no workspace da mãe (nada se mistura
-automaticamente) → grupo deletado.
+`absorbed/<célula>-<data>/` no workspace do Mano (o orquestrador tem `groups/`
+read-only; escrever no workspace da célula-mãe exigiria mount rw que ela não
+tem — nada se mistura automaticamente) → grupo deletado.
 
 **Envelope — a única mudança de código-fonte do projeto:**
 `~/.config/nanoclaw/cell-envelope.json` (blocked pattern: célula nenhuma monta):

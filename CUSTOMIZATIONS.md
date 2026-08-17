@@ -17,6 +17,8 @@ commit por assunto, para poder ser rebaseado ou descartado individualmente.
 | `feat(dashboard)` | `/add-dashboard` — pusher + wiring em `src/index.ts` | Mantém; o wiring é 3 linhas em `main()` |
 | `feat(scripts)` | `refresh-linear-token.sh` — renova o token do MCP do Linear | Mantém |
 | `fix(ncl)` | `--rw` em `groups config add-mount` | Some se o upstream aceitar o PR |
+| `feat(guard)` (×3) | Envelope celular: autonomia de mitose/absorção dentro de limites no host | Mantém |
+| `feat(genomes)` + `feat(projects)` | Genomas de papel, ticks, perfis de projeto (organização celular) | Mantém |
 | `chore` (gitignore) | `.serena/` | Mantém |
 
 Não versionado, e é de propósito: `.env` (credenciais), `data/`, `logs/`, e o resto de
@@ -91,3 +93,6 @@ Este install pressupõe, fora do repo:
 - Mount allowlist com roots ro para `~/nanoclaw-v2/groups`, `~/nanoclaw-v2/genomes` e
   `~/nanoclaw-v2/projects` (visão do orquestrador + insumos de mitose). Nunca
   allowlistar a raiz do repo — o check de blocked-pattern não desce e exporia `.env`.
+- `~/.config/nanoclaw/cell-envelope.json` — limites da organização celular
+  (max_cells/max_per_role/idle_days/roles). Ausente = mitose autônoma desligada
+  (todo create de célula volta a pedir aprovação). Editar só à mão.
