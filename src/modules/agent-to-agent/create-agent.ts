@@ -17,6 +17,7 @@
 import path from 'path';
 
 import { GROUPS_DIR } from '../../config.js';
+import { cellRoleOf, readCellEnvelope } from '../../cli/cell-envelope.js';
 import { createAgentGroup, getAgentGroup, getAgentGroupByFolder } from '../../db/agent-groups.js';
 import { getContainerConfig } from '../../db/container-configs.js';
 import { getSession } from '../../db/sessions.js';
@@ -26,6 +27,7 @@ import { log } from '../../log.js';
 import { writeSessionMessage } from '../../session-manager.js';
 import type { AgentGroup, Session } from '../../types.js';
 import { requestApproval } from '../approvals/index.js';
+import { formatCellEvent, notifyOwnerCellEvent } from '../cell-notify.js';
 import { createDestination, getDestinationByName, normalizeName } from './db/agent-destinations.js';
 import { writeDestinations } from './write-destinations.js';
 
@@ -161,7 +163,8 @@ async function performCreateAgent(
   // stamps its config row in one step (a NULL parent resolves to claude). The
   // operator can still flip a child later with `ncl groups config update
   // --provider`.
-  const parentProvider = getContainerConfig(sourceGroup.id)?.provider ?? 'claude';
+  const sourceConfig = getContainerConfig(sourceGroup.id);
+  const parentProvider = sourceConfig?.provider ?? 'claude';
   initGroupFilesystem(newGroup, { instructions: instructions ?? undefined, provider: parentProvider });
 
   // Insert bidirectional destination rows (= ACL grants).
@@ -199,4 +202,21 @@ async function performCreateAgent(
     notify(`Agent "${localName}" created. You can now message it with send_message({ to: "${localName}", ... }).`);
   }
   log.info('Agent group created', { agentGroupId, name, localName, folder, parent: sourceGroup.id });
+
+  // Notificação de envelope: dentro do envelope celular, o orquestrador
+  // (cli_scope global) cria células autonomamente — a guard's agents.create
+  // decision (./guard.ts) já dá ALLOW(CELL_ENVELOPE_ALLOW_REASON) sem
+  // aprovação, mas essa reason não chega até aqui (o handler guardado só
+  // recebe content/session, não a decision). Equivalente na prática: só se
+  // chega a este ponto com allow do envelope quando cli_scope é global E o
+  // nome bate um papel do envelope — a mesma condição do guard, replicada
+  // (spec 2026-08-17-cell-org-design §4). Fire-and-forget: notificação
+  // perdida não pode desfazer a criação que já aconteceu.
+  if ((sourceConfig?.cli_scope ?? 'group') === 'global') {
+    const env = readCellEnvelope();
+    const role = env ? cellRoleOf(localName, env) : null;
+    if (role) {
+      void notifyOwnerCellEvent(formatCellEvent('create', localName, 'via create_agent (a2a) pelo orquestrador'));
+    }
+  }
 }

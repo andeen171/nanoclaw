@@ -18,7 +18,9 @@ import { getMessagingGroupAgentByPair } from '../db/messaging-groups.js';
 import { getSession } from '../db/sessions.js';
 import { guard, type GuardActor } from '../guard/index.js';
 import { registerApprovalHandler, requestApproval } from '../modules/approvals/index.js';
+import { formatCellEvent, notifyOwnerCellEvent } from '../modules/cell-notify.js';
 import type { PendingApproval } from '../types.js';
+import { CELL_ENVELOPE_ALLOW_REASON } from './cell-envelope.js';
 import type { CallerContext, ErrorCode, RequestFrame, ResponseFrame } from './frame.js';
 import { localizeIsoTimestamps } from './format.js';
 import { getResource } from './crud.js';
@@ -169,6 +171,24 @@ export async function dispatch(
 
   try {
     let data = await cmd.handler(parsed, ctx);
+
+    // Notificação de envelope: dentro do envelope celular, create/delete de
+    // célula executa sem card de aprovação — o dono ainda precisa saber que
+    // aconteceu, só que depois do fato (spec 2026-08-17-cell-org-design §4).
+    // Casa pela reason do allow (não por cli_scope sozinho), então só dispara
+    // quando o allow realmente veio do corredor da célula. Fire-and-forget:
+    // uma notificação perdida não pode reverter um comando que já executou.
+    if (
+      ctx.caller === 'agent' &&
+      decision.effect === 'allow' &&
+      decision.reason === CELL_ENVELOPE_ALLOW_REASON &&
+      (req.command === 'groups-create' || req.command === 'groups-delete')
+    ) {
+      const cell = String(req.args.folder ?? req.args.id ?? '?');
+      void notifyOwnerCellEvent(
+        formatCellEvent(req.command === 'groups-create' ? 'create' : 'delete', cell, 'via ncl pelo orquestrador'),
+      );
+    }
 
     // Post-handler group-scope enforcement. Applies only to the auto-generated
     // `list` / `get` handlers (`cmd.generic`), which return raw DB rows carrying
