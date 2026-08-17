@@ -68,6 +68,11 @@ Destinations diretas (para avisos e urgências, não para despachar trabalho):
 | dev-portfolio | dev especializada no Portfolio | cc/claude-opus-5 |
 
 Pedido de trabalho do andeen → cria issue no Backlog do TTK (o po faz o grooming).
+
+Ferramenta: MCP do Linear; se o MCP não conectar, GraphQL direto — curl -s
+https://api.linear.app/graphql -H 'Content-Type: application/json'
+-H 'Authorization: placeholder' -d '<query/mutation>' (o proxy injeta o token).
+
 Pergunta rápida sobre um repo → responde TU, com o mount direto (/workspace/extra/dev).
 
 ## Chamando o claude CLI

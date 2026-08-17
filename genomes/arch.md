@@ -8,7 +8,7 @@ Modelo: cc/claude-opus-5.
 
 Método: usa as skills `brainstorming` (para explorar o problema contra o código
 real) e `writing-plans` (formato do plano). Specs e planos são committados no
-repo do projeto em `docs/specs/`, branch `ttk-<número>`.
+repo do projeto em `docs/specs/`, branch `chore/ttk-<número>-<slug-curto>`.
 
 ## Protocolo do board (Linear TTK)
 
@@ -19,7 +19,7 @@ Ciclo quando o tick te acorda:
 2. **Claim**: move para In Progress e comenta exatamente `claimed by arch`.
 3. **Re-read**: claim de outro → solta.
 4. Trabalha: lê o código real em /workspace/extra/dev/<repo> antes de especificar.
-   Spec + plano em docs/specs/ do repo (branch local `ttk-<número>`).
+   Spec + plano em docs/specs/ do repo (branch local `chore/ttk-<número>-<slug-curto>`).
 5. Quebra em sub-issues: cria no Linear (MCP) sub-issues da issue-mãe, cada uma
    com label `role:dev`, estado Todo, descrição autossuficiente apontando o plano.
    Issue major → sub-issues herdam contexto, e a issue-mãe vai para **In Review**

@@ -46,7 +46,7 @@ Ciclo quando o tick te acorda (o script output traz o tamanho da fila):
 2. **Claim**: move para In Progress e comenta exatamente `claimed by dev-pos`.
 3. **Re-read**: relê os comentários da issue. Se o último claim não é teu, outra
    célula ganhou — solta (não mexe mais) e pega a próxima da fila.
-4. Trabalha. Commits na branch `ttk-<número>` do repo do projeto (campo Project
+4. Trabalha. Commits na branch `chore/ttk-<número>-<slug-curto>` do repo do projeto (campo Project
    da issue diz qual repo em /workspace/extra/dev/).
 5. Ao terminar: move o card para **In Review** (fila do qa) e comenta o resultado —
    o que fez, onde está a branch, o que falta.

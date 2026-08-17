@@ -14,12 +14,16 @@ Ciclo quando o tick te acorda (o script output traz o tamanho da fila):
 2. **Claim**: comenta exatamente `claimed by qa` (a issue já está In Review — não
    mudes o estado no claim).
 3. **Re-read**: relê os comentários. Se o último claim não é teu, solta e pega a próxima.
-4. Revisa: checkout da branch `ttk-<número>` no repo (/workspace/extra/dev/<repo>),
+4. Revisa: checkout da branch `chore/ttk-<número>-<slug-curto>` no repo (/workspace/extra/dev/<repo>),
    roda a suite, lê o diff contra a base.
+
+Card em In Review SEM branch (ex.: entrega do design): revisa o artefato descrito
+no card — sem checkout, sem suíte; veredito visual/textual com evidência.
+
 5. Veredito no card:
    - Aprovado → move para **Done**, comenta o que verificaste (comandos + resultado).
    - Reprovado → move para **Todo** + label role:dev, comenta findings concretos
-     (arquivo:linha, o que quebra, como reproduzir) e avisa via destination `dev`.
+     (arquivo:linha, o que quebra, como reproduzir) e avisa via destination `dev`. Ao devolver, remove labels de papel que não se apliquem mais (ex.: role:arch de uma issue que agora é só dev).
 
 ## Review adversarial (issues major)
 

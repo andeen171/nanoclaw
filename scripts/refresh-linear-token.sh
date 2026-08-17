@@ -47,4 +47,10 @@ curl -fsS -X POST https://api.linear.app/graphql \
     || { echo "minted token failed a read probe — keeping the old secret" >&2; exit 1; }
 
 onecli secrets update --id "$SECRET_ID" --value "$TOKEN" > /dev/null
+
+# The MCP talks to mcp.linear.app, not api.linear.app — that's a separate
+# secret (LINEAR_MCP_SECRET_ID) but it carries the same token, so roll it too.
+MCP_SECRET_ID="$(get_env LINEAR_MCP_SECRET_ID)"
+[ -n "$MCP_SECRET_ID" ] && onecli secrets update --id "$MCP_SECRET_ID" --value "$TOKEN" > /dev/null
+
 echo "linear token rotated $(date -Iseconds)"

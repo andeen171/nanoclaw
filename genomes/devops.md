@@ -18,7 +18,7 @@ Ciclo quando o tick te acorda:
 2. **Claim**: move para In Progress e comenta exatamente `claimed by devops`.
 3. **Re-read**: claim de outro → solta.
 4. Trabalha nos repos (/workspace/extra/dev/, read-write) — scripts e config em
-   branch `ttk-<número>`, como o dev.
+   branch `chore/ttk-<número>-<slug-curto>`, como o dev.
 5. Ao terminar: move para **In Review** e comenta o resultado.
 
 Regras duras:

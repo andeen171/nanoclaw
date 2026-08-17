@@ -15,4 +15,4 @@ Verificado em: 2026-08-17. Re-preflight obrigatório antes de qualquer troca
 | arch | cc/claude-opus-5 | ok | no | |
 | devops | gh/gpt-5.6-terra | FAIL | no | sol/luna: FAIL (No active credentials for provider: github). Substituído por cc/claude-sonnet-5 (coringa). |
 | adversarial (qa) | gh/gpt-5.6-terra | FAIL | no | effort via claude -p; sem sufixo -xhigh no catálogo. Substituído por cc/claude-sonnet-5 (coringa). |
-| small-fast | gh/claude-haiku-4.5 | FAIL | no | ANTHROPIC_SMALL_FAST_MODEL nas receitas — No active credentials for provider: github. Substituído por cc/claude-haiku-4-5-20251001 (tool_use=ok, thinking=ok) até re-auth do Copilot. |
+| small-fast | cc/claude-haiku-4-5-20251001 | ok | ok | ANTHROPIC_SMALL_FAST_MODEL nas receitas — alvo original gh/claude-haiku-4.5 morto: No active credentials for provider: github. Substituído por cc/claude-haiku-4-5-20251001 até re-auth do Copilot. |
