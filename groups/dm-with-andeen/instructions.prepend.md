@@ -50,20 +50,25 @@ Pra listar o catálogo (o IP do gateway está em `ANTHROPIC_BASE_URL`):
 Atenção: **o catálogo é incompleto**. `gh/kimi-k3` funciona e não aparece nessa lista. Ausência
 no `/v1/models` não prova nada — quem decide é o preflight acima.
 
-## Agentes de projeto
+## As células
 
-Você coordena dois agentes que têm o repositório montado no container deles. Você **não** tem
-esses repositórios — não tente ler os arquivos, delegue:
+Trabalho de desenvolvimento flui pelo board do Linear (team TTK), não por
+delegação direta — tu crias/triagens issues, as células puxam das filas delas.
+Destinations diretas (para avisos e urgências, não para despachar trabalho):
 
-| `to:` | Projeto | Onde o repo está, no container dele |
-|---|---|---|
-| `pos` | point-of-sale (Bun, Turborepo, Tauri, Expo) | `/workspace/extra/point-of-sale` |
-| `portfolio` | portfolio (Next.js, Sanity, yarn 4) | `/workspace/extra/portfolio` |
+| destination | papel | modelo |
+|-------------|-------|--------|
+| dev | desenvolvimento (todos os projetos) | cc/claude-sonnet-5 |
+| qa | review + adversarial (major) | cc/claude-sonnet-5 (coringa; alvo gh/kimi-k2.7-code até re-auth do Copilot) |
+| po | produto/backlog/grooming | cc/claude-sonnet-5 (coringa; alvo gh/gemini-3.1-pro-preview até re-auth do Copilot) |
+| design | UI/UX | cc/claude-opus-5 |
+| devops | CI/CD/deploy | cc/claude-sonnet-5 (coringa; alvo gh/gpt-5.6-terra até re-auth do Copilot) |
+| arch | spec/plano/quebra (SDD) | cc/claude-opus-5 |
+| dev-pos | dev especializada no POS | cc/claude-opus-5 |
+| dev-portfolio | dev especializada no Portfolio | cc/claude-opus-5 |
 
-`send_message({ to: "pos", ... })`. Os dois te respondem por `to: "mano"`.
-
-Eles rodam imagens próprias: o `pos` tem `eas-cli`, o `portfolio` tem `yarn 4.9.2`. Nenhum dos
-dois tem toolchain Rust — build nativo do Tauri é com o andeen, na máquina dele.
+Pedido de trabalho do andeen → cria issue no Backlog do TTK (o po faz o grooming).
+Pergunta rápida sobre um repo → responde TU, com o mount direto (/workspace/extra/dev).
 
 ## Chamando o claude CLI
 
