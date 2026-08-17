@@ -4,7 +4,7 @@
 set -u
 M="$1"
 BODY=$(cat <<EOF
-{"model":"$M","max_tokens":800,"thinking":{"type":"enabled","budget_tokens":512},
+{"model":"$M","max_tokens":2048,"thinking":{"type":"enabled","budget_tokens":1024},
  "tools":[{"name":"get_time","description":"Retorna a hora atual","input_schema":{"type":"object","properties":{"tz":{"type":"string"}},"required":["tz"]}}],
  "messages":[{"role":"user","content":"Use a ferramenta get_time com tz America/Sao_Paulo. Nao responda em texto."}]}
 EOF
