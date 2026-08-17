@@ -205,3 +205,13 @@ Ordem: **B → A → C** (cada fase útil sozinha):
 
 Fora de escopo desta spec: tier self-hosted, socket do Docker no container,
 dashboards novos (o `/add-dashboard` existente já mostra grupos/sessões).
+
+## Registro do piloto (Fase A)
+
+Piloto executado em 2026-08-17: dev-pos completou claim→branch→trabalho na issue
+TTK-360 (claim `claimed by dev-pos` com re-read, commit 4841469c na branch
+`chore/ttk-360-readme-cell-pilot`, 1 arquivo / 1 inserção). Ticks subsequentes do
+loop rodaram pelo cron sem falha (6 runs, 0 failed); o gate de fila vazia está
+operante. Ressalvas registradas no ledger da fase: naming da branch divergiu da
+convenção `ttk-<n>` do genoma; um tick tomou 429 às 12:38 durante a janela de
+limite da conta cc/ (evento externo, curado no reset). Fase C liberada.
