@@ -2,7 +2,10 @@
 # Tick da celula po: conta a fila no Linear; so acorda o agente com trabalho.
 # Contrato do task-script: ultima linha = JSON single-line {"wakeAgent":bool,"data":{}}.
 # Falha de rede => wakeAgent:false explicito (gated, sem backoff) — nunca exit sem output.
-Q='{"query":"{ issues(filter:{team:{key:{eq:\"TTK\"}}, state:{name:{eq:\"Backlog\"}}, labels:{none:{name:{eq:\"groomed\"}}}}, first:50){ nodes{ identifier } } }"}'
+# IssueLabelCollectionFilter nao tem "none" (400 GRAPHQL_VALIDATION_FAILED,
+# pego pelo supervisor); "sem label groomed" = every com neq — issue sem
+# label nenhum tambem passa (every sobre conjunto vazio), que e o correto.
+Q='{"query":"{ issues(filter:{team:{key:{eq:\"TTK\"}}, state:{name:{eq:\"Backlog\"}}, labels:{every:{name:{neq:\"groomed\"}}}}, first:50){ nodes{ identifier } } }"}'
 R=$(curl -sf --max-time 20 https://api.linear.app/graphql \
   -H 'Content-Type: application/json' -H 'Authorization: placeholder' \
   -d "$Q") || { echo '{"wakeAgent": false, "data": {"error": "linear-unreachable"}}'; exit 0; }
