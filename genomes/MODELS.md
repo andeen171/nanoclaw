@@ -7,7 +7,7 @@ Verificado em: 2026-08-17. Re-preflight obrigatório antes de qualquer troca
 
 | Papel | Modelo | tool_use | thinking | Observação |
 |-------|--------|----------|----------|------------|
-| Mano | gh/gemini-3.5-flash | FAIL | no | crítico: Mano vive de tool-calling — IDE token expired: unauthorized: token expired. **Task 9 usa branch de fallback.** |
+| Mano | gh/gemini-3.5-flash | FAIL | no | crítico: Mano vive de tool-calling — IDE token expired: unauthorized: token expired. Task 9 pulada em 2026-08-17: flash reprovou (gh/ sem credencial); Mano permanece em cc/claude-opus-5. **Task 9 usa branch de fallback.** |
 | dev | cc/claude-sonnet-5 | ok | no | escalação: cc/claude-opus-5 via claude -p |
 | qa | gh/kimi-k2.7-code | FAIL | no | kimi-k3 morto (só openrouter/, sem créditos) — No active credentials for provider: github. Substituído por cc/claude-sonnet-5 (coringa). |
 | po | gh/gemini-3.1-pro-preview | FAIL | no | No active credentials for provider: github. Substituído por cc/claude-sonnet-5 (coringa). |
