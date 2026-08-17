@@ -1,0 +1,13 @@
+{
+  "name": "Portfolio",
+  "linearProject": "Portfolio",
+  "repo": "/home/andeen/dev/portfolio",
+  "mounts": [
+    { "host": "/home/andeen/dev/portfolio", "container": "portfolio", "rw": true },
+    { "host": "/home/andeen/.local/share/nanoclaw-bin", "container": "hostbin", "rw": false }
+  ],
+  "packagesNpm": ["@yarnpkg/cli-dist@4.9.2"],
+  "packagesApt": [],
+  "mcpServers": {},
+  "notes": "Next.js com yarn 4 APENAS (@yarnpkg/cli-dist — o pacote npm 'yarn' para em 1.22). Nao ler o .env do repo."
+}

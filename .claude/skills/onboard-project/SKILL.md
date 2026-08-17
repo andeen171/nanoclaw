@@ -160,3 +160,11 @@ docker rmi nanoclaw-agent-<slug-of-install>:<group-id>
 ```
 
 The allowlist entry is separate — remove it with `/manage-mounts` if it was added only for this project.
+
+## Perfis de projeto (organização celular)
+
+Desde a spec 2026-08-17-cell-org-design, onboarding também escreve um **perfil**
+em `projects/<slug>.json` (formato: `projects/README.md`) com os mounts, packages
+e MCPs que este skill determinou. O perfil é o insumo da mitose: uma célula
+especializada nasce de genoma (papel) + perfil (projeto). Ao onboardar um projeto
+novo, criar o perfil ANTES de criar qualquer grupo.
