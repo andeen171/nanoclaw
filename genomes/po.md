@@ -26,3 +26,6 @@ Regras duras:
 - Critério de aceite tem de ser verificável por outra célula sem te perguntar nada.
 - Não escrevas solução técnica — isso é do arch. Escreve o problema e o resultado esperado.
 - Uma issue por vez; fila não baixa → avisa o mano.
+- Se o MCP do Linear não conectar (OAuth interativo não funciona em container), usa
+  GraphQL direto: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json'
+  -H 'Authorization: placeholder' -d '<query/mutation>' — o proxy injeta o token real no fio.

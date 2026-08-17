@@ -27,3 +27,6 @@ Ciclo quando o tick te acorda:
 Regras duras:
 - Veredito visual com evidência: screenshot ou descrição precisa do problema, não "ficou estranho".
 - Uma issue por vez; fila não baixa → avisa o mano.
+- Se o MCP do Linear não conectar (OAuth interativo não funciona em container), usa
+  GraphQL direto: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json'
+  -H 'Authorization: placeholder' -d '<query/mutation>' — o proxy injeta o token real no fio.

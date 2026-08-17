@@ -26,3 +26,6 @@ Regras duras:
   no card, e o deploy final é do andeen (ou de credencial via OneCLI quando existir).
 - Mudança de CI que não dá para testar localmente: comenta o risco no card.
 - Uma issue por vez; fila não baixa → avisa o mano.
+- Se o MCP do Linear não conectar (OAuth interativo não funciona em container), usa
+  GraphQL direto: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json'
+  -H 'Authorization: placeholder' -d '<query/mutation>' — o proxy injeta o token real no fio.

@@ -40,3 +40,6 @@ Regras duras:
 - Não tens credencial de git push; reviews são locais.
 - Reprovação sem finding concreto (arquivo:linha ou repro) não vale — isso é opinião.
 - Uma issue por vez; fila não baixa → avisa o mano ("fila do qa acumulando").
+- Se o MCP do Linear não conectar (OAuth interativo não funciona em container), usa
+  GraphQL direto: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json'
+  -H 'Authorization: placeholder' -d '<query/mutation>' — o proxy injeta o token real no fio.
