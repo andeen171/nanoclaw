@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tick da celula dev: conta a fila no Linear; so acorda o agente com trabalho.
+# Tick da celula devops: conta a fila no Linear; so acorda o agente com trabalho.
 # Contrato do task-script: ultima linha = JSON single-line {"wakeAgent":bool,"data":{}}.
 # Falha de rede => wakeAgent:false explicito (gated, sem backoff) — nunca exit sem output.
 Q='{"query":"{ issues(filter:{team:{key:{eq:\"TTK\"}}, state:{name:{eq:\"Todo\"}}, labels:{some:{name:{eq:\"role:devops\"}}}}, first:50){ nodes{ identifier } } }"}'

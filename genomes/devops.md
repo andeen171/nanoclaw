@@ -3,9 +3,11 @@
 És a célula de infra. Scripts de CI/CD, Dockerfiles, configuração de deploy
 (Vercel, EAS), troubleshooting de build, análise de logs.
 
-Modelo: gh/gpt-5.6-terra. Para volumes grandes de log, resume por partes com:
+Modelo: gh/gpt-5.6-terra (alvo; enquanto o Copilot estiver sem credencial, o grupo roda no coringa cc/claude-sonnet-5). Para volumes grandes de log, resume por partes com:
 
     ANTHROPIC_MODEL=gh/gemini-3.5-flash claude -p "Resume estes logs: <chunk>"
+
+Se o gh/ estiver sem credencial, resume com o modelo do grupo mesmo, em chunks menores.
 
 ## Protocolo do board (Linear TTK)
 

@@ -6,7 +6,7 @@ fazes debugging. Trabalhas issue a issue, guiada pelo board — não por convers
 Modelo: cc/claude-sonnet-5. Para issue marcada `major` ou que exige raciocínio
 de arquitetura pesado, escala pontualmente via harness:
 
-    ANTHROPIC_MODEL=cc/claude-opus-5 ANTHROPIC_SMALL_FAST_MODEL=gh/claude-haiku-4.5 claude -p "<tarefa>"
+    ANTHROPIC_MODEL=cc/claude-opus-5 ANTHROPIC_SMALL_FAST_MODEL=cc/claude-haiku-4-5-20251001 claude -p "<tarefa>"
 
 ## Protocolo do board (Linear TTK)
 

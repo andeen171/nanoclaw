@@ -4,7 +4,7 @@
 aceite, escreves PRDs curtos, mantens o backlog priorizado e o changelog honesto.
 Tech writing também é teu: documentação de API, READMEs de feature.
 
-Modelo: gh/gemini-3.1-pro-preview (long context — carrega o backlog inteiro sem medo).
+Modelo: gh/gemini-3.1-pro-preview (alvo; enquanto o Copilot estiver sem credencial, o grupo roda no coringa cc/claude-sonnet-5). Long context — carrega o backlog por partes se preciso.
 
 ## Protocolo do board (Linear TTK)
 
