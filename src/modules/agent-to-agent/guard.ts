@@ -6,7 +6,13 @@
  * create-agent.ts: `global` scope creates directly (create_agent is the
  * intended primitive for trusted owner agent groups); anything else — the
  * default `group` scope, and unknown/missing config, fail-closed — holds for
- * the requesting group's admin chain.
+ * the requesting group's admin chain. Within the global branch, a
+ * cell-shaped name (spec 2026-08-17-cell-org-design, Fase C Task 3) first
+ * counts against the host's cell envelope — the same corridor commandDecide
+ * (src/cli/cell-envelope.ts) applies to `ncl groups create`, so the limit
+ * can't be bypassed by asking for the create via a2a instead. A non-cell
+ * name, or no envelope file, falls through to the unconditional ALLOW this
+ * branch always gave.
  *
  * a2a.send — the decision moved verbatim out of routeAgentMessage, in its
  * original check order: a missing destination row denies; a missing target
@@ -20,7 +26,8 @@
 import { getAgentGroup } from '../../db/agent-groups.js';
 import { getContainerConfig } from '../../db/container-configs.js';
 import { ALLOW, DENY, HOLD, defineGuardedAction } from '../../guard/index.js';
-import { hasDestination } from './db/agent-destinations.js';
+import { CELL_ENVELOPE_ALLOW_REASON, cellRoleOf, countCells, readCellEnvelope } from '../../cli/cell-envelope.js';
+import { hasDestination, normalizeName } from './db/agent-destinations.js';
 import { getMessagePolicy } from './db/agent-message-policies.js';
 
 /**
@@ -45,6 +52,23 @@ export const agentsCreate = defineGuardedAction({
     if (input.actor.kind !== 'agent') return DENY('create_agent is a container-originated action.');
     const cliScope = getContainerConfig(input.actor.agentGroupId)?.cli_scope ?? 'group';
     if (cliScope === 'global') {
+      // Cell-envelope corridor (spec 2026-08-17-cell-org-design, Fase C Task
+      // 3): a cell-shaped name counts against the host's envelope here too —
+      // otherwise the CLI corridor's limits (commandDecide, Task 2) are
+      // bypassable by asking for the same create via a2a instead of `ncl
+      // groups create`. Non-cell names and a missing/invalid envelope file
+      // fall through to today's unconditional ALLOW below.
+      const env = readCellEnvelope();
+      if (env) {
+        const role = cellRoleOf(normalizeName(String(input.payload.name ?? '')), env);
+        if (role) {
+          const { total, byRole } = countCells(env);
+          if (total + 1 > env.max_cells) return HOLD(`cell-envelope: max_cells (${env.max_cells}) atingido`);
+          if ((byRole[role] ?? 0) + 1 > env.max_per_role)
+            return HOLD(`cell-envelope: max_per_role (${env.max_per_role}) atingido para ${role}`);
+          return ALLOW(CELL_ENVELOPE_ALLOW_REASON);
+        }
+      }
       // Trusted owner agent group — an approval tap on every sub-agent spawn
       // would be needless friction.
       return ALLOW('trusted global-scope agent group');

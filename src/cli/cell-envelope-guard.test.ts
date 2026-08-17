@@ -23,6 +23,7 @@ import '../cli/commands/index.js';
 import { ensureContainerConfig, updateContainerConfigScalars } from '../db/container-configs.js';
 import { closeDb, createAgentGroup, initTestDb, runMigrations } from '../db/index.js';
 import { CELL_ENVELOPE_ALLOW_REASON } from './cell-envelope.js';
+import { agentsCreate } from '../modules/agent-to-agent/guard.js';
 import { commandGuard } from './registry.js';
 import type { GuardInput } from '../guard/index.js';
 
@@ -155,5 +156,43 @@ describe('cell envelope branch in commandDecide', () => {
     writeEnvelope();
     const d = commandGuard('groups-create').decide({ actor: { kind: 'host' }, payload: {} });
     expect(d.effect).toBe('allow');
+  });
+});
+
+// Fase C Task 3 — mesmo envelope, rota a2a (agents.create). Hoje o
+// cli_scope-global consulta agentsCreate.decide diretamente (guard.ts:44-56)
+// e dá ALLOW incondicional — a rota de mitose do Mano. Sem o envelope aqui, o
+// corredor da CLI (commandDecide) é contornável simplesmente pedindo a
+// criação via a2a em vez de `ncl groups create`.
+describe('cell envelope branch em agentsCreate.decide (rota a2a)', () => {
+  it('1. agents.create (a2a) de agent global, name "qa-pos", envelope com folga → allow com o motivo do envelope', () => {
+    writeEnvelope();
+    seedCell('ag-qa-1', 'qa-portfolio'); // 1 qa existente — folga sob max_per_role=3
+    const d = agentsCreate.decide(fromMano({ name: 'qa-pos' }));
+    expect(d.effect).toBe('allow');
+    expect(d.reason).toBe(CELL_ENVELOPE_ALLOW_REASON);
+  });
+
+  it('2. agents.create (a2a) com byRole.qa já em max_per_role (3) → hold', () => {
+    writeEnvelope();
+    seedCell('ag-qa-1', 'qa-pos');
+    seedCell('ag-qa-2', 'qa-portfolio');
+    seedCell('ag-qa-3', 'qa-crm');
+    const d = agentsCreate.decide(fromMano({ name: 'qa-novo' }));
+    expect(d.effect).toBe('hold');
+  });
+
+  it('3. agents.create (a2a) com name "assistente-pessoal" (não-célula) → allow (comportamento atual preservado)', () => {
+    writeEnvelope();
+    const d = agentsCreate.decide(fromMano({ name: 'assistente-pessoal' }));
+    expect(d.effect).toBe('allow');
+    expect(d.reason).toBe('trusted global-scope agent group');
+  });
+
+  it('4. agents.create (a2a) SEM envelope (env var aponta para arquivo inexistente) → allow (comportamento atual; a2a nunca segurou global)', () => {
+    fs.rmSync(envPath, { force: true }); // garante ausência — readCellEnvelope() → null
+    const d = agentsCreate.decide(fromMano({ name: 'qa-pos' }));
+    expect(d.effect).toBe('allow');
+    expect(d.reason).toBe('trusted global-scope agent group');
   });
 });
