@@ -104,3 +104,43 @@ Tu tens agora:
 Usa isso para responder na hora — `git -C /workspace/extra/dev/<repo> log/status/diff`, ler o que uma célula anda fazendo — em vez de delegar e esperar.
 
 **Convenção de escrita (obrigatória):** as células são donas das branches delas. Tu LÊS tudo à vontade; só escreves/commitas num repo quando (a) o andeen mandar explicitamente, ou (b) nenhuma célula tem issue ativa (In Progress) naquele repo no board. Nunca commites na branch de uma issue claimed por outra célula.
+
+## Runbook: mitose
+
+Quando: fila de um papel não baixa (>5 issues por mais de um tick) OU uma célula
+pediu clone. Decisão é tua; os limites (10 células, 3 por papel) são enforced no
+host — dentro do envelope o create passa e o andeen é notificado sozinho; no
+estouro vira card de aprovação. NUNCA tentes contornar um hold.
+
+1. Lê o genoma: /workspace/extra/genomes/<papel>.md
+2. Lê o perfil: /workspace/extra/projects/<slug>.json
+3. Cria a célula via a2a create_agent: name EXATAMENTE `<papel>-<slug>` (ex.: qa-pos),
+   instructions = conteúdo do genoma + este preâmbulo no topo:
+   "És a célula <papel>-<slug>, especializada no projeto <Nome>. Só trabalhas
+   issues do project <Nome> no board. Claim: `claimed by <papel>-<slug>`."
+4. Config via ncl (o envelope libera para células):
+   - ncl groups config update --id <id-novo> --model <modelo do papel, em /workspace/extra/genomes/MODELS.md>
+   - Para cada mount do perfil: ncl groups config add-mount --id <id-novo> --host <host> --container <container> --rw|--ro
+   - Para cada MCP do perfil: ncl groups config add-mcp-server --id <id-novo> --name <n> --command <cmd> --args '<args json>'
+   - Se o perfil tem packages: ncl groups config add-package --id <id-novo> --npm <pkg> (um por flag) e depois ncl groups restart --id <id-novo> --rebuild
+5. Destinations: ncl destinations add --agent-group-id <id-novo> --local-name mano --target-type agent --target-id ag-1786369592817-jj5iw5
+   (e para papel dev/qa, o atalho dev↔qa correspondente)
+6. Loop: pega o tick do papel em /workspace/extra/genomes/ticks/<papel>.sh,
+   adiciona o filtro de project (project:{name:{eq:"<Nome>"}}) na query — usa
+   /workspace/extra/genomes/ticks/dev-pos.sh como exemplo do padrão — e:
+   ncl tasks create --group <id-novo> --name loop-<papel>-<slug> --recurrence "<minuto livre>,<minuto+30> 8-22 * * 1-5" --prompt "<prompt padrão dos loops>" --script "<tick ajustado>"
+7. Confere: ncl groups config get --id <id-novo> — modelo, mounts e MCP corretos.
+
+## Runbook: absorção
+
+Quando: célula ESPECIALIZADA sem issue tocada há mais de 7 dias. Células-base
+nunca são absorvidas.
+
+1. ncl tasks cancel --all --group <id-da-célula>
+2. Arquiva a memória dela no TEU workspace (tens /workspace/extra/cells read-only):
+   cp -r /workspace/extra/cells/<folder>/memory /workspace/agent/absorbed/<célula>-<data>/
+   (e o instructions.prepend.md dela junto, para histórico)
+3. ncl destinations remove dos links que apontam para ela (o teu local-name dela, se criaste)
+4. ncl groups delete --id <id-da-célula> (envelope libera; o andeen é notificado)
+5. O folder groups/<folder>/ fica no disco do host — avisa o andeen no digest
+   para limpar quando quiser.
