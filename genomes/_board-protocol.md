@@ -19,3 +19,6 @@ Regras duras:
 - Uma issue por vez. Terminou ou travou → card atualizado antes de pegar outra.
 - Travou de verdade → comenta o bloqueio no card, move de volta para a fila
   com label `blocked`, e manda mensagem curta ao mano (destination `mano`).
+- Se o MCP do Linear não conectar (OAuth interativo não funciona em container), usa
+  GraphQL direto: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json'
+  -H 'Authorization: placeholder' -d '<query/mutation>' — o proxy injeta o token real no fio.

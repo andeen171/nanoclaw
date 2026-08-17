@@ -1,6 +1,6 @@
 {
   "name": "POS",
-  "linearProject": "POS",
+  "linearProject": "POS — Restaurant System",
   "repo": "/home/andeen/dev/point-of-sale",
   "mounts": [
     { "host": "/home/andeen/dev/point-of-sale", "container": "point-of-sale", "rw": true },
