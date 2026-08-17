@@ -33,16 +33,35 @@ pnpm install && pnpm run build && pnpm test
 
 Depois do rebase, reinicie o serviço (`systemctl --user restart nanoclaw-v2-*.service`).
 
-Duas armadilhas:
+Existe também a skill `/update-nanoclaw`, que faz esse fluxo de forma guiada — é o
+caminho recomendado, porque ela cobre os passos fora do git (marcador, imagem,
+gateway) que o rebase sozinho não toca.
+
+Armadilhas, todas encontradas no update de 2026-08-17 (2.1.54 → 2.2.0):
 
 - **Os adapters de canal não são pra resolver na mão.** Trunk não versiona adapter
   nenhum: eles moram na branch `channels` e entram via `/add-discord`, `/add-whatsapp`.
   Se o rebase conflitar neles, dropa o commit `chore(channels)` e roda a skill de novo
   contra o upstream novo — o resultado é o mesmo e sem merge sujo.
+- **Este install é hardened** (`NANOCLAW_HARDENED_IMAGE=true`), então a imagem do agente
+  é `./container/build.sh pull`, nunca a forma nua — que sai com código 3 justamente pra
+  não substituir os bytes puxados por um build local.
+- **Carimbe o marcador antes de reiniciar**:
+  `pnpm exec tsx scripts/upgrade-state.ts set "" update-nanoclaw`. Sem isso o tripwire
+  (`src/upgrade-state.ts`) chama `process.exit(1)` no próximo boot, porque
+  `data/upgrade-state.json` não bate com a versão do `package.json`.
+- **`git reset --hard` não desfaz um update.** Ele volta só o código; marcador, `dist/`,
+  versão do gateway e tag da imagem ficam no estado novo — e a divergência entre marcador
+  e `package.json` impede o próximo boot. Rollback de verdade é reverter os quatro.
+- **O `pnpm` do shell pode estar quebrado.** O mise não tem versão global de node setada,
+  então os shims (`pnpm`, `ncl`, `bun`) morrem com `No version is set for shim`. Contorno:
+  `export PATH=~/.local/share/mise/installs/node/25.3.0/bin:$PATH`. Definitivo:
+  `mise use -g node@25.3.0`.
+- **`container/agent-runner/node_modules` costuma não existir**, e sem ele o typecheck do
+  container falha com `TS2688: Cannot find type definition file for 'bun'` e é pulado.
+  `cd container/agent-runner && bun install --frozen-lockfile` faz a validação valer.
 - **O aviso no topo do `CLAUDE.md`** é sobre trazer o v2 pra cima de uma instalação v1.
   Rebase de v2 em cima de v2, que é o caso aqui, não é isso.
-
-Existe também a skill `/update-nanoclaw`, que faz esse fluxo de forma guiada.
 
 ## Dependências do host
 
@@ -54,6 +73,13 @@ Este install pressupõe, fora do repo:
   IP do bridge no spawn (`src/providers/claude.ts`).
 - OneCLI para os demais segredos, incluindo o token do MCP do Linear
   (host-pattern `mcp.linear.app`, injetado no fio — nunca em `container.json`).
+  **O gateway binda em `172.17.0.1`, não no default `127.0.0.1`** — é como os
+  containers o alcançam (`ONECLI_URL` no `.env`). Esse bind vem de env var, não está
+  persistido: qualquer `docker compose up` em `~/.onecli` sem
+  `ONECLI_BIND_HOST=172.17.0.1` rebinda pra localhost — o health host-side continua
+  passando e toda chamada credenciada dos agentes morre no proxy. O comando do
+  `docs/onecli-upgrades.md` verbatim cai exatamente nisso; sempre passe a variável
+  (ou persista num `~/.onecli/.env`).
 - Timer systemd de usuário `nanoclaw-linear-token.timer`, semanal, chamando
   `scripts/refresh-linear-token.sh`. O grant client_credentials do Linear dá 30
   dias e não tem refresh token; sem isso o MCP começa a dar 401 um mês depois de
