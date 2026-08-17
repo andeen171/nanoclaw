@@ -88,3 +88,6 @@ Este install pressupõe, fora do repo:
   read-only nos grupos de projeto. Não dá pra montar `~/.local/bin` direto: é
   padrão bloqueado em `mount-security` (o host executa `onecli` e `claude` de
   lá). Ao atualizar o rtk no host, recopie.
+- Mount allowlist com roots ro para `~/nanoclaw-v2/groups`, `~/nanoclaw-v2/genomes` e
+  `~/nanoclaw-v2/projects` (visão do orquestrador + insumos de mitose). Nunca
+  allowlistar a raiz do repo — o check de blocked-pattern não desce e exporia `.env`.
