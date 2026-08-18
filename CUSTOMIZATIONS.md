@@ -19,6 +19,7 @@ commit por assunto, para poder ser rebaseado ou descartado individualmente.
 | `fix(ncl)` (×2) | `--rw` em `groups config add-mount`; `tasks` honra `--group` explícito de agente global | Somem se o upstream aceitar os PRs |
 | `feat(guard)` (×4) | Envelope celular: autonomia de mitose/absorção dentro de limites no host (inclui fix do frame kebab) | Mantém |
 | `feat(genomes)` + `feat(projects)` | Genomas de papel, ticks, perfis de projeto (organização celular) | Mantém |
+| `fix(agent-runner)` | Heartbeat no interval do turno — tool call longa não congela o mtime (kill falso no absolute ceiling) | Some se o upstream aceitar o PR |
 | `chore` (gitignore) | `.serena/` | Mantém |
 
 Não versionado, e é de propósito: `.env` (credenciais), `data/`, `logs/`, e o resto de

@@ -1,6 +1,6 @@
 # Modelos verificados — preflight real via OmniRoute
 
-Verificado em: 2026-08-18. Re-preflight obrigatório antes de qualquer troca
+Verificado em: 2026-08-18 (cadeias engrossadas pós-turno: gh/claude-sonnet-5, gh/gpt-5.3-codex e gh/kimi-k3 preflightados OK; maxRetries 3). Motivo: 7.5k rate-limits em 12h esgotaram cc/+agy/ juntos e sem perna gh/ o combo inteiro 503ava. Re-preflight obrigatório antes de qualquer troca
 (o catálogo /v1/models mente; gh/kimi-k3 sumiu do catálogo sem aviso em ago/2026).
 
 **Desde 2026-08-18 os grupos apontam para COMBOS do OmniRoute, não para modelos
@@ -13,9 +13,9 @@ grupos.
 | Combo | Cadeia (ordem de prioridade) | Papéis |
 |-------|------------------------------|--------|
 | nc-fast | gh/claude-haiku-4.5 → agy/claude-sonnet-4-6 → agy/gemini-3.6-flash-medium | Mano, po |
-| nc-review | agy/gemini-3.1-pro-low → agy/claude-sonnet-4-6 → cc/claude-sonnet-5 | qa |
-| nc-code | cc/claude-sonnet-5 → agy/claude-sonnet-4-6 → agy/gemini-3.1-pro-low | dev, devops |
-| nc-heavy | cc/claude-opus-5 → agy/claude-opus-4-6-thinking → agy/claude-sonnet-4-6 | design, arch, dev-pos, dev-portfolio |
+| nc-review | agy/gemini-3.1-pro-low → gh/kimi-k3 → gh/claude-sonnet-5 → agy/claude-sonnet-4-6 → cc/claude-sonnet-5 | qa |
+| nc-code | cc/claude-sonnet-5 → gh/claude-sonnet-5 → agy/claude-sonnet-4-6 → gh/gpt-5.3-codex → agy/gemini-3.1-pro-low | dev, devops |
+| nc-heavy | cc/claude-opus-5 → agy/claude-opus-4-6-thinking → agy/claude-sonnet-4-6 → gh/claude-sonnet-5 | design, arch, dev-pos, dev-portfolio |
 
 Preflight 2026-08-18 (todos os combos e pernas): tool_use ok em nc-fast,
 nc-review, nc-code (thinking ok), nc-heavy, e nas pernas individuais
