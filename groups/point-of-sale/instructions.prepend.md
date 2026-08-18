@@ -62,3 +62,16 @@ Regras duras:
   GraphQL direto: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json'
   -H 'Authorization: placeholder' -d '<query/mutation>' — o proxy injeta o token real no fio.
 - Só trabalhas issues do project "POS — Restaurant System" — ignora o resto da fila.
+
+## Fluxo (relay de papéis)
+
+Issues podem ter uma linha `Fluxo: papel → papel → …` na descrição (escrita no
+grooming pelo po, arbitrada pelo mano nas major). Ao terminar a TUA etapa:
+- Há papel DEPOIS do teu no fluxo → troca o label `role:<teu>` pelo
+  `role:<próximo>`; estado: **In Review** se o próximo é qa, senão **Todo**.
+  Comenta o handoff: o que fizeste, onde está (branch/arquivos), o que o
+  próximo papel precisa.
+- És o último (ou a issue não tem linha Fluxo) → comportamento normal do teu
+  genoma.
+- O fluxo é do po+mano: não o alteres. Se achares que falta ou sobra etapa,
+  comenta na issue e segue o que está escrito.

@@ -1,18 +1,34 @@
 # Modelos verificados — preflight real via OmniRoute
 
-Verificado em: 2026-08-17. Re-preflight obrigatório antes de qualquer troca
+Verificado em: 2026-08-18. Re-preflight obrigatório antes de qualquer troca
 (o catálogo /v1/models mente; gh/kimi-k3 sumiu do catálogo sem aviso em ago/2026).
 
-**Nota (fix round 2):** budget_tokens do probe corrigido 512→1024 em `scripts/preflight-model.sh` (mínimo da API); resultados cc/ re-validados.
+**Desde 2026-08-18 os grupos apontam para COMBOS do OmniRoute, não para modelos
+crus.** Um combo é uma cadeia de failover (`strategy: priority`) chamável pelo
+nome — se o primeiro modelo estoura limite/quota, o gateway tenta o próximo
+sozinho. É o que mantém o organismo andando quando um plano acaba. Combos vivem
+no OmniRoute (`combos` table / UI); mudanças lá NÃO precisam de config nos
+grupos.
 
-| Papel | Modelo | tool_use | thinking | Observação |
-|-------|--------|----------|----------|------------|
-| Mano | gh/gemini-3.5-flash | FAIL | no | crítico: Mano vive de tool-calling — IDE token expired: unauthorized: token expired. Task 9 pulada em 2026-08-17: flash reprovou (gh/ sem credencial); Mano permanece em cc/claude-opus-5. **Task 9 usa branch de fallback.** |
-| dev | cc/claude-sonnet-5 | ok | no | escalação: cc/claude-opus-5 via claude -p |
-| qa | gh/kimi-k2.7-code | FAIL | no | kimi-k3 morto (só openrouter/, sem créditos) — No active credentials for provider: github. Substituído por cc/claude-sonnet-5 (coringa). |
-| po | gh/gemini-3.1-pro-preview | FAIL | no | No active credentials for provider: github. Substituído por cc/claude-sonnet-5 (coringa). |
-| design | cc/claude-opus-5 | ok | no | |
-| arch | cc/claude-opus-5 | ok | no | |
-| devops | gh/gpt-5.6-terra | FAIL | no | sol/luna: FAIL (No active credentials for provider: github). Substituído por cc/claude-sonnet-5 (coringa). |
-| adversarial (qa) | gh/gpt-5.6-terra | FAIL | no | effort via claude -p; sem sufixo -xhigh no catálogo. Substituído por cc/claude-sonnet-5 (coringa). |
-| small-fast | cc/claude-haiku-4-5-20251001 | ok | ok | ANTHROPIC_SMALL_FAST_MODEL nas receitas — alvo original gh/claude-haiku-4.5 morto: No active credentials for provider: github. Substituído por cc/claude-haiku-4-5-20251001 até re-auth do Copilot. |
+| Combo | Cadeia (ordem de prioridade) | Papéis |
+|-------|------------------------------|--------|
+| nc-fast | agy/gemini-3.6-flash-medium → gh/claude-haiku-4.5 → agy/gemini-3.5-flash-low | Mano, po |
+| nc-review | agy/gemini-3.1-pro-low → agy/claude-sonnet-4-6 → cc/claude-sonnet-5 | qa |
+| nc-code | cc/claude-sonnet-5 → agy/claude-sonnet-4-6 → agy/gemini-3.1-pro-low | dev, devops |
+| nc-heavy | cc/claude-opus-5 → agy/claude-opus-4-6-thinking → agy/claude-sonnet-4-6 | design, arch, dev-pos, dev-portfolio |
+
+Preflight 2026-08-18 (todos os combos e pernas): tool_use ok em nc-fast,
+nc-review, nc-code (thinking ok), nc-heavy, e nas pernas individuais
+agy/gemini-3.6-flash-{medium,high}, agy/gemini-3.1-pro-low,
+agy/claude-sonnet-4-6, agy/claude-opus-4-6-thinking, gh/claude-haiku-4.5.
+
+Mortos/inúteis (não usar): gh/kimi-k2.7-code (400 com thinking),
+gh/gemini-3.1-pro-preview e gh/gemini-3.5-flash (not supported no gh/),
+gh/gpt-5.6-terra (sumiu do gh/; aug/ = Auggie CLI não instalado),
+gh/claude-sonnet-4.6 (funciona mas depreca 2026-09-01).
+
+| Papel | Observação |
+|-------|------------|
+| dev | escalação pontual: cc/claude-opus-5 via claude -p |
+| adversarial (qa) | agy/gemini-3.1-pro-low via claude -p — família diferente do autor (dev = Claude), que é o propósito; se agy/ cair, pula a passada e anota no card |
+| small-fast | gh/claude-haiku-4.5 (ANTHROPIC_SMALL_FAST_MODEL nas receitas) — restaurado pós re-auth do Copilot; fallback cc/claude-haiku-4-5-20251001 |
