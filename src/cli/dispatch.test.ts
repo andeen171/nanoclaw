@@ -349,6 +349,24 @@ describe('CLI scope enforcement', () => {
     }
   });
 
+  it('group: rejects cross-group access via chave kebab (agent-group-id)', async () => {
+    mockGetContainerConfig.mockReturnValue({ cli_scope: 'group' });
+
+    // O guard decide antes do normalizeArgs — sem checar a variante kebab, a
+    // negação dependia do fill do dispatch sobrescrever o snake (invariante
+    // acidental por ordem de inserção). O guard nega direto agora.
+    const resp = await dispatch(
+      { id: '1', command: 'groups-test', args: { 'agent-group-id': 'other-group' } },
+      agentCtx(),
+    );
+
+    expect(resp.ok).toBe(false);
+    if (!resp.ok) {
+      expect(resp.error.code).toBe('forbidden');
+      expect(resp.error.message).toContain('scoped');
+    }
+  });
+
   it('group: allows same-group id', async () => {
     mockGetContainerConfig.mockReturnValue({ cli_scope: 'group' });
 

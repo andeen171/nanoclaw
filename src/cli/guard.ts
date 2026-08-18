@@ -165,7 +165,9 @@ function commandDecide(cmd: CommandDef, input: GuardInput) {
     // Enforce group scope on all agent-group-related args.
     // Different resources use different arg names for the agent group ID.
     // Only check --id for resources where it IS the agent group ID.
-    for (const key of ['agent_group_id', 'group'] as const) {
+    // Inclui a variante kebab: o guard decide antes do normalizeArgs, então
+    // frames do container ainda carregam "agent-group-id".
+    for (const key of ['agent_group_id', 'group', 'agent-group-id'] as const) {
       if (args[key] && args[key] !== actor.agentGroupId) {
         return DENY('CLI access is scoped to this agent group.');
       }
