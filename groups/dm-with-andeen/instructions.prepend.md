@@ -132,7 +132,7 @@ estouro vira card de aprovação. NUNCA tentes contornar um hold.
 6. Loop: pega o tick do papel em /workspace/extra/genomes/ticks/<papel>.sh,
    adiciona o filtro de project (project:{name:{eq:"<Nome>"}}) na query — usa
    /workspace/extra/genomes/ticks/dev-pos.sh como exemplo do padrão — e:
-   ncl tasks create --group <id-novo> --name loop-<papel>-<slug> --recurrence "<minuto livre>,<minuto+30> 8-22 * * 1-5" --prompt "<prompt padrão dos loops>" --script "<tick ajustado>"
+   ncl tasks create --group <id-novo> --name loop-<papel>-<slug> --recurrence "<minuto livre>,<minuto+30> * * * *" --dangerously-override-recurrence-limit (24/7 — decisão do andeen 2026-08-18) --prompt "<prompt padrão dos loops>" --script "<tick ajustado>"
 7. Confere: ncl groups config get --id <id-novo> — modelo, mounts e MCP corretos.
 
 ## Runbook: absorção
