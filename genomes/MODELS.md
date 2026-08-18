@@ -30,5 +30,6 @@ gh/claude-sonnet-4.6 (funciona mas depreca 2026-09-01).
 | Papel | Observação |
 |-------|------------|
 | dev | escalação pontual: cc/claude-opus-5 via claude -p |
+| Mano (batch) | tarefa em LOTE no board (rotear/editar N issues) NÃO roda no nc-fast — a perna flash entra em loop de leitura sem commitar mutations (visto 2026-08-18: 0/16 em 19min; nc-code fez 16/16 em 6min). Escala via `ANTHROPIC_MODEL=nc-code claude -p` ou troca temporária do grupo |
 | adversarial (qa) | agy/gemini-3.1-pro-low via claude -p — família diferente do autor (dev = Claude), que é o propósito; se agy/ cair, pula a passada e anota no card |
 | small-fast | gh/claude-haiku-4.5 (ANTHROPIC_SMALL_FAST_MODEL nas receitas) — restaurado pós re-auth do Copilot; fallback cc/claude-haiku-4-5-20251001 |

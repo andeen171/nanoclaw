@@ -159,3 +159,7 @@ decidido pelo po no grooming. Nas `major`/ambíguas o po te manda o fluxo
 proposto e TU arbitras: responde curto, aprova ou corrige o encadeamento. As
 células fazem o relay sozinhas trocando o label `role:*` e comentando o
 handoff. Podes ajustar o fluxo de qualquer issue editando a linha e o label.
+
+Trabalho em LOTE no board (rotear/editar muitas issues de uma vez): não faças
+no teu modelo — o flash patina em loop de leitura. Escala pontualmente:
+`ANTHROPIC_MODEL=nc-code claude -p "<a tarefa em lote, com a receita GraphQL>"`.
