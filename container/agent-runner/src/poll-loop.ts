@@ -426,6 +426,13 @@ export async function processQuery(
   let endedForCommand = false;
   let corruptionStreak = 0;
   const pollHandle = setInterval(() => {
+    // Heartbeat aqui, não só por evento do SDK: uma única tool call longa
+    // (Playwright, Bash sem timeout declarado) não emite mensagem nenhuma até
+    // retornar — o for-await de eventos para, o mtime congela e o host mata um
+    // container saudável no absolute ceiling (visto 4× em 2026-08-18). O
+    // interval vive exatamente a vida do turno (criado antes do for-await,
+    // limpo no finally), então processo realmente morto continua detectável.
+    touchHeartbeat();
     if (done || pollInFlight || endedForCommand) return;
     pollInFlight = true;
 
