@@ -12,7 +12,7 @@ grupos.
 
 | Combo | Cadeia (ordem de prioridade) | Papéis |
 |-------|------------------------------|--------|
-| nc-fast | agy/gemini-3.6-flash-medium → gh/claude-haiku-4.5 → agy/gemini-3.5-flash-low | Mano, po |
+| nc-fast | gh/claude-haiku-4.5 → agy/claude-sonnet-4-6 → agy/gemini-3.6-flash-medium | Mano, po |
 | nc-review | agy/gemini-3.1-pro-low → agy/claude-sonnet-4-6 → cc/claude-sonnet-5 | qa |
 | nc-code | cc/claude-sonnet-5 → agy/claude-sonnet-4-6 → agy/gemini-3.1-pro-low | dev, devops |
 | nc-heavy | cc/claude-opus-5 → agy/claude-opus-4-6-thinking → agy/claude-sonnet-4-6 | design, arch, dev-pos, dev-portfolio |
@@ -21,6 +21,13 @@ Preflight 2026-08-18 (todos os combos e pernas): tool_use ok em nc-fast,
 nc-review, nc-code (thinking ok), nc-heavy, e nas pernas individuais
 agy/gemini-3.6-flash-{medium,high}, agy/gemini-3.1-pro-low,
 agy/claude-sonnet-4-6, agy/claude-opus-4-6-thinking, gh/claude-haiku-4.5.
+
+ATENÇÃO — pernas Gemini via agy/ são INADEQUADAS como primária de sessão
+agêntica: o wire Antigravity mangla os nomes das tools (`tool_<hash>` em vez
+do nome real) e o modelo entra em confusão/loop (visto 2×: kickoff do Mano
+0/16 em 19min, tick do po 2026-08-18 02:00). Preflight de 1 chamada passa;
+sessão real com 25 tools quebra. Gemini fica como ÚLTIMA perna de failover e
+para `claude -p` pontual (adversarial, resumo de logs), onde funciona.
 
 Mortos/inúteis (não usar): gh/kimi-k2.7-code (400 com thinking),
 gh/gemini-3.1-pro-preview e gh/gemini-3.5-flash (not supported no gh/),
