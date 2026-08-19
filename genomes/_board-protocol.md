@@ -14,8 +14,14 @@ Ciclo quando o tick te acorda (o script output traz o tamanho da fila):
 
 Regras duras:
 - NUNCA trabalhes numa issue sem claim confirmado pelo re-read.
-- Não tens credencial de git push. O trabalho fica em branch local; o comentário
-  no card diz a branch. Não tentes configurar credenciais.
+- **Tens push.** O proxy do OneCLI injeta a credencial de GitHub (conexao OAuth
+  com escopo `repo`). Nunca configures credencial, nunca mexas no remote, nunca
+  pecas token: `git push -u origin <branch>`. Se vier erro de certificado, usa
+  `GIT_SSL_CAINFO="$SSL_CERT_FILE" git push ...` — o git ignora SSL_CERT_FILE.
+- **Commit em branch local NAO e entrega.** So conta com a branch no remote e o
+  PR aberto. A imagem nao tem `gh`; o PR abre pela API do GitHub. Receita
+  completa em /workspace/extra/genomes/_git-publish.md. Prova antes de dizer que
+  entregaste: `git branch -r --contains <sha>` vazio = nao publicaste.
 - Uma issue por vez. Terminou ou travou → card atualizado antes de pegar outra.
 - Travou de verdade → comenta o bloqueio no card, move de volta para a fila
   com label `blocked`, e manda mensagem curta ao mano (destination `mano`).

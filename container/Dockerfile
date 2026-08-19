@@ -62,6 +62,30 @@ ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
 # ~300MB Chromium. We've already installed the system one above.
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
+# ---- GitHub CLI --------------------------------------------------------------
+# Not packaged in Debian bookworm, and taken as the upstream release tarball
+# rather than via GitHub's apt repo — one fewer signing key and source list to
+# keep current for a single binary.
+#
+# No `gh auth login` inside the container: the OneCLI gateway injects the real
+# credential at the proxy boundary. gh only needs GH_TOKEN set to a placeholder
+# so it doesn't refuse before reaching the network (set at spawn by
+# src/container-runner.ts), and it honours SSL_CERT_FILE for the gateway CA.
+ARG GH_VERSION=2.97.0
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "$arch" in \
+        amd64) gharch=amd64 ;; \
+        arm64) gharch=arm64 ;; \
+        *) echo "unsupported architecture for gh: $arch" >&2; exit 1 ;; \
+    esac; \
+    curl -fsSL -o /tmp/gh.tgz \
+        "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${gharch}.tar.gz"; \
+    tar -xzf /tmp/gh.tgz -C /tmp; \
+    install -m 0755 "/tmp/gh_${GH_VERSION}_linux_${gharch}/bin/gh" /usr/local/bin/gh; \
+    rm -rf /tmp/gh.tgz "/tmp/gh_${GH_VERSION}_linux_${gharch}"; \
+    gh --version
+
 # ---- Bun runtime -------------------------------------------------------------
 # Install via the official script (handles multi-arch detection), then move
 # the binary to /usr/local/bin so the non-root `node` user can execute it.

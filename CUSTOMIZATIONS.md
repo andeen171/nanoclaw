@@ -21,6 +21,8 @@ commit por assunto, para poder ser rebaseado ou descartado individualmente.
 | `feat(genomes)` + `feat(projects)` | Genomas de papel, ticks, perfis de projeto (organização celular) | Mantém |
 | `fix(agent-runner)` | Heartbeat no interval do turno — tool call longa não congela o mtime (kill falso no absolute ceiling) | Some se o upstream aceitar o PR |
 | `fix(agent-runner)` | Continuação estourada de contexto conta como sessão inválida — célula sai sozinha do `Prompt is too long` em vez de exigir restart manual | Some se o upstream aceitar o PR |
+| `fix(container-runner)` | `GIT_SSL_CAINFO` + `GH_TOKEN` no spawn — sem eles o git não confia no CA do gateway e o `gh` recusa antes da rede | Some se o upstream aceitar o PR |
+| `chore(container)` | `gh` na imagem (release oficial pinado por `ARG GH_VERSION`) | Mantém |
 | `chore` (gitignore) | `.serena/` | Mantém |
 
 Não versionado, e é de propósito: `.env` (credenciais), `data/`, `logs/`, e o resto de

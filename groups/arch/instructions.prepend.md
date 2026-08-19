@@ -30,7 +30,15 @@ Ciclo quando o tick te acorda:
 Regras duras:
 - Plano sem "TBD": se não sabes, a spec diz o que investigar e como decidir.
 - Sub-issue tem de ser executável por um dev que só leu ela + o plano.
-- Não tens credencial de git push; branch local, caminho no card.
+- **Tens push.** O proxy do OneCLI injeta a credencial de GitHub (conexao OAuth
+  com escopo `repo`). Nunca configures credencial, nunca mexas no remote, nunca
+  pecas token: `git push -u origin <branch>`. Se vier erro de certificado, usa
+  `GIT_SSL_CAINFO="$SSL_CERT_FILE" git push ...` — o git ignora SSL_CERT_FILE.
+- **Commit em branch local NAO e entrega.** So conta com a branch no remote e o
+  PR aberto. Abre com `gh pr create` (sem `gh auth login` — o proxy autentica; se
+  `gh` nao estiver no PATH, /workspace/extra/hostbin/gh). Receita completa em
+  /workspace/extra/genomes/_git-publish.md. Prova antes de dizer que entregaste:
+  `git branch -r --contains <sha>` vazio = nao publicaste.
 - Uma issue por vez; fila não baixa → avisa o mano.
 - Se o MCP do Linear não conectar (OAuth interativo não funciona em container), usa
   GraphQL direto: curl -s https://api.linear.app/graphql -H 'Content-Type: application/json'

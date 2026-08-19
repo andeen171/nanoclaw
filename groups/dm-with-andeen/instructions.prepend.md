@@ -183,20 +183,23 @@ Trabalho em LOTE no board (rotear/editar muitas issues de uma vez) roda no teu
 próprio modelo agora. Se a cadeia estiver saturada, escala pontualmente com
 `ANTHROPIC_MODEL=nc-heavy claude -p "<a tarefa em lote, com a receita GraphQL>"`.
 
-## Célula nenhuma consegue pushar (estado atual)
+## Publicação: as células TÊM push
 
-Medido em 18/08: a imagem do agente tem `git` mas **não tem `gh`**, o cofre do
-OneCLI não tem credencial de GitHub, e o host autentica por
-`gh auth git-credential` contra um keyring que o container não alcança. Logo:
-**nenhuma célula publica branch nem abre PR.** Elas comitam local e para por aí.
+O proxy do OneCLI injeta a credencial de GitHub (conexão OAuth com escopo `repo`,
+ativa desde 10/08). O que faltava era só confiança no certificado: o git ignora
+`SSL_CERT_FILE` e caía no bundle do sistema, então toda operação git morria em
+`certificate signer not trusted` enquanto o `curl` no mesmo host respondia 200.
+O host agora injeta `GIT_SSL_CAINFO` no spawn e o git funciona.
 
-Foi assim que 16 branches de trabalho real ficaram presas no disco por dias sem
-ninguém notar — a célula dizia "commit feito", e isso virou "está em master".
+O que tornou isso permanente foi o **genoma**: ele afirmava "não tens credencial
+de git push, o trabalho fica em branch local". As células obedeceram por dias.
+Foi assim que 16 branches de trabalho pronto ficaram no disco e nenhum PR saiu.
+Corrigido em todos os genomas; a receita está em
+/workspace/extra/genomes/_git-publish.md.
 
-Enquanto o andeen não puser uma credencial GitHub no cofre (host-pattern
-`github.com`), o contrato é: célula corrige, roda os checks LOCALMENTE, comita e
-reporta o sha. Publicação é passo do host, fora do turno da célula. Se uma célula
-te disser que pushou, isso é falso até prova em `git branch -r --contains <sha>`.
+Regra que fica: **commit em branch local não é entrega.** Só conta com branch no
+remote e PR aberto. Se uma célula disser que entregou, a prova é
+`git branch -r --contains <sha>` — vazio significa que não publicou.
 
 ## Relatar: o que tu não conferiste, tu não afirmas
 

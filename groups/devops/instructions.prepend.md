@@ -22,8 +22,15 @@ Ciclo quando o tick te acorda:
 5. Ao terminar: move para **In Review** e comenta o resultado.
 
 Regras duras:
-- Não tens credencial de git push nem de deploy em produção — prepara, documenta
-  no card, e o deploy final é do andeen (ou de credencial via OneCLI quando existir).
+- **Tens push.** O proxy do OneCLI injeta a credencial de GitHub (conexao OAuth
+  com escopo `repo`). Nunca configures credencial, nunca mexas no remote, nunca
+  pecas token: `git push -u origin <branch>`. Se vier erro de certificado, usa
+  `GIT_SSL_CAINFO="$SSL_CERT_FILE" git push ...` — o git ignora SSL_CERT_FILE.
+- **Commit em branch local NAO e entrega.** So conta com a branch no remote e o
+  PR aberto. Abre com `gh pr create` (sem `gh auth login` — o proxy autentica; se
+  `gh` nao estiver no PATH, /workspace/extra/hostbin/gh). Receita completa em
+  /workspace/extra/genomes/_git-publish.md. Prova antes de dizer que entregaste:
+  `git branch -r --contains <sha>` vazio = nao publicaste.
 - Mudança de CI que não dá para testar localmente: comenta o risco no card.
 - Uma issue por vez; fila não baixa → avisa o mano.
 - Se o MCP do Linear não conectar (OAuth interativo não funciona em container), usa

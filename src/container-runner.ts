@@ -541,6 +541,24 @@ async function buildContainerArgs(
   }
   log.info('OneCLI gateway applied', { containerName });
 
+  // git ignores SSL_CERT_FILE — it reads its own CA path — so without this the
+  // gateway's MITM cert is untrusted and every git operation over HTTPS dies
+  // with "server verification failed: certificate signer not trusted", while
+  // curl to the same host succeeds. That asymmetry is what convinced the cells
+  // (and their genomes) they had no push credential at all: the credential was
+  // there and injected the whole time, only git couldn't complete the
+  // handshake. Cost: 16 branches of finished work stranded on local disk for
+  // days. Derived from the SDK's own value so a path change upstream follows.
+  const sslCertFile = args.find((a) => a.startsWith('SSL_CERT_FILE='));
+  if (sslCertFile) args.push('-e', `GIT_SSL_CAINFO=${sslCertFile.slice('SSL_CERT_FILE='.length)}`);
+  else log.warn('OneCLI set no SSL_CERT_FILE — git over HTTPS will fail in this container');
+
+  // gh refuses to run unauthenticated before it ever reaches the network, so it
+  // needs *a* token even though the real one arrives at the proxy boundary.
+  // Same placeholder convention the Linear MCP already uses — the gateway
+  // overwrites the Authorization header on the way out.
+  args.push('-e', 'GH_TOKEN=placeholder');
+
   // Override entrypoint: run v2 entry point directly via Bun (no tsc, no stdin).
   args.push('--entrypoint', 'bash');
 

@@ -41,7 +41,14 @@ do arch) e PR final antes do Done. Anexa os findings do adversarial no card, com
 julgamento sobre cada um — ele acha, tu decides.
 
 Regras duras:
-- Não tens credencial de git push; reviews são locais.
+- **Tens push.** O proxy do OneCLI injeta a credencial de GitHub (conexao OAuth
+  com escopo `repo`). Nunca configures credencial, nunca mexas no remote, nunca
+  pecas token: `git push -u origin <branch>`. Se vier erro de certificado, usa
+  `GIT_SSL_CAINFO="$SSL_CERT_FILE" git push ...` — o git ignora SSL_CERT_FILE.
+- **Commit em branch local NAO e entrega.** So conta com a branch no remote e o
+  PR aberto. A imagem nao tem `gh`; o PR abre pela API do GitHub. Receita
+  completa em /workspace/extra/genomes/_git-publish.md. Prova antes de dizer que
+  entregaste: `git branch -r --contains <sha>` vazio = nao publicaste.
 - Reprovação sem finding concreto (arquivo:linha ou repro) não vale — isso é opinião.
 - Uma issue por vez; fila não baixa → avisa o mano ("fila do qa acumulando").
 - Se o MCP do Linear não conectar (OAuth interativo não funciona em container), usa
