@@ -25,9 +25,6 @@ gh pr checks <n>          # estado da CI
 gh pr view <n> --comments # comentários de review
 ```
 
-Se `gh` não estiver no PATH, usa `/workspace/extra/hostbin/gh` — o binário está
-montado aí enquanto a imagem nova não é publicada.
-
 Alternativa sem `gh`, mesma credencial e mesmo proxy:
 
 ```bash

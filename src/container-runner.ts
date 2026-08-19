@@ -566,7 +566,14 @@ async function buildContainerArgs(
   const imageTag = containerConfig.imageTag || CONTAINER_IMAGE;
   args.push(imageTag);
 
-  args.push('-c', 'exec bun run /app/src/index.ts');
+  // Put the host-bin mount on PATH so the tools it carries (gh, rtk) are plain
+  // commands instead of absolute paths the agent has to remember. Built from
+  // the image's own $PATH rather than a hardcoded copy, and APPENDED, not
+  // prepended: once the image ships its own gh, that one wins and the mounted
+  // copy quietly becomes the fallback. A PATH entry that doesn't exist is
+  // harmless, so groups without the mount are unaffected. `exec` still replaces
+  // the shell, so SIGTERM forwarding is unchanged.
+  args.push('-c', 'export PATH="$PATH:/workspace/extra/hostbin"; exec bun run /app/src/index.ts');
 
   return args;
 }

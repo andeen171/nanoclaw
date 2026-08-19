@@ -47,6 +47,30 @@ describe('buildContainerArgs ordering invariant (structural)', () => {
   });
 });
 
+describe('container spawn command (structural)', () => {
+  const src = () => fs.readFileSync(path.join(process.cwd(), 'src', 'container-runner.ts'), 'utf-8');
+
+  // The image has no /app/dist and the shell must not linger: `exec` is what
+  // makes SIGTERM reach bun so outbound.db writes finalize instead of being
+  // orphaned. Dropping it silently costs the last turn of every restart.
+  it('execs bun so signals forward', () => {
+    expect(src()).toContain('exec bun run /app/src/index.ts');
+  });
+
+  // The host-bin mount carries gh and rtk. It is APPENDED to the image's own
+  // $PATH, never prepended and never a hardcoded copy of it: appending means
+  // that once the image ships its own gh, the image wins and the mounted copy
+  // becomes the fallback with no code change.
+  it('appends the host-bin mount to the image PATH rather than prepending', () => {
+    const line = src()
+      .split('\n')
+      .find((l) => l.includes('exec bun run /app/src/index.ts'));
+    expect(line).toBeDefined();
+    expect(line).toContain('export PATH="$PATH:/workspace/extra/hostbin"');
+    expect(line).not.toContain('/workspace/extra/hostbin:$PATH');
+  });
+});
+
 describe('plugins read-only mount (structural)', () => {
   // Stamped plugin content must be immutable inside the container (Agent
   // Plugins contract: writes go to plugin-data/). Driving buildMounts needs a

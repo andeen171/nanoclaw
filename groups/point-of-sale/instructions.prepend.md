@@ -58,8 +58,8 @@ Regras duras:
   pecas token: `git push -u origin <branch>`. Se vier erro de certificado, usa
   `GIT_SSL_CAINFO="$SSL_CERT_FILE" git push ...` — o git ignora SSL_CERT_FILE.
 - **Commit em branch local NAO e entrega.** So conta com a branch no remote e o
-  PR aberto. Abre com `gh pr create` (sem `gh auth login` — o proxy autentica; se
-  `gh` nao estiver no PATH, /workspace/extra/hostbin/gh). Receita completa em
+  PR aberto. Abre com `gh pr create` (sem `gh auth login` — o proxy autentica).
+  Receita completa em
   /workspace/extra/genomes/_git-publish.md. Prova antes de dizer que entregaste:
   `git branch -r --contains <sha>` vazio = nao publicaste.
 - Uma issue por vez. Terminou ou travou → card atualizado antes de pegar outra.
