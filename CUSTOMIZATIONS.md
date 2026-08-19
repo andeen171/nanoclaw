@@ -20,6 +20,7 @@ commit por assunto, para poder ser rebaseado ou descartado individualmente.
 | `feat(guard)` (×4) | Envelope celular: autonomia de mitose/absorção dentro de limites no host (inclui fix do frame kebab) | Mantém |
 | `feat(genomes)` + `feat(projects)` | Genomas de papel, ticks, perfis de projeto (organização celular) | Mantém |
 | `fix(agent-runner)` | Heartbeat no interval do turno — tool call longa não congela o mtime (kill falso no absolute ceiling) | Some se o upstream aceitar o PR |
+| `fix(agent-runner)` | Continuação estourada de contexto conta como sessão inválida — célula sai sozinha do `Prompt is too long` em vez de exigir restart manual | Some se o upstream aceitar o PR |
 | `chore` (gitignore) | `.serena/` | Mantém |
 
 Não versionado, e é de propósito: `.env` (credenciais), `data/`, `logs/`, e o resto de

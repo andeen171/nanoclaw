@@ -12,10 +12,30 @@ grupos.
 
 | Combo | Cadeia (ordem de prioridade) | Papéis |
 |-------|------------------------------|--------|
-| nc-fast | gh/claude-haiku-4.5 → agy/claude-sonnet-4-6 → agy/gemini-3.6-flash-medium | Mano, po |
-| nc-review | agy/gemini-3.1-pro-low → gh/kimi-k3 → gh/claude-sonnet-5 → agy/claude-sonnet-4-6 → cc/claude-sonnet-5 | qa |
-| nc-code | cc/claude-sonnet-5 → gh/claude-sonnet-5 → agy/claude-sonnet-4-6 → gh/gpt-5.3-codex → agy/gemini-3.1-pro-low | dev, devops |
-| nc-heavy | cc/claude-opus-5 → agy/claude-opus-4-6-thinking → agy/claude-sonnet-4-6 → gh/claude-sonnet-5 | design, arch, dev-pos, dev-portfolio |
+| nc-fast | gh/claude-haiku-4.5 → agy/claude-sonnet-4-6 → cc/claude-haiku-4-5-20251001 → agy/gemini-3.6-flash-medium | po |
+| nc-review | agy/gemini-3.1-pro-low → gh/kimi-k3 → cc/claude-sonnet-5 → gh/claude-sonnet-5 → agy/claude-sonnet-4-6 | qa |
+| nc-code | cc/claude-sonnet-5 → gh/claude-sonnet-5 → agy/claude-sonnet-4-6 → gh/gpt-5.3-codex → agy/gemini-3.1-pro-low | **Mano**, dev, devops |
+| nc-heavy | cc/claude-opus-5 → gh/claude-sonnet-5 → agy/claude-opus-4-6-thinking → cc/claude-sonnet-5 → agy/claude-sonnet-4-6 | design, arch, dev-pos, dev-portfolio |
+
+**Regra de ordenação (18/08): duas pernas do mesmo provider nunca ficam
+seguidas, e `maxRetries` = número de pernas.** Motivo abaixo.
+
+## Combo NÃO garante failover
+
+Quando as contas das primeiras pernas estão sem quota, o gateway recusa a
+requisição **na admissão** — `503 all upstream accounts are inactive` — sem
+tentar as pernas seguintes, mesmo que uma esteja num provider 100% saudável.
+
+Medido em 18/08: o `nc-heavy` acumulou **1509 falhas**. Na hora 17Z, de ~471
+requisições só **21 tocaram a perna 1**; as outras 450 morreram sem tentar
+perna nenhuma. A perna `gh/claude-sonnet-5` teve **zero tentativas** enquanto
+`github/*` respondia 31/31 no mesmo intervalo. O `nc-code`, que já tinha `gh/`
+na perna 2, atravessou a mesma janela sem parar.
+
+Diagnóstico de 503 em combo: comparar tentativas por perna
+(`GROUP BY provider, model` em `call_logs`) contra a saúde do provider no mesmo
+intervalo. Perna com zero tentativas + provider saudável = é este comportamento,
+não "todos os modelos caíram".
 
 Preflight 2026-08-18 (todos os combos e pernas): tool_use ok em nc-fast,
 nc-review, nc-code (thinking ok), nc-heavy, e nas pernas individuais

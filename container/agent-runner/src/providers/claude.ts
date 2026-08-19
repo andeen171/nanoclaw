@@ -457,8 +457,17 @@ const CLAUDE_CODE_AUTO_COMPACT_WINDOW = process.env.CLAUDE_CODE_AUTO_COMPACT_WIN
  * Stale-session detection. Matches Claude Code's error text when a
  * resumed session can't be found — missing transcript .jsonl, unknown
  * session ID, etc.
+ *
+ * Context overflow counts as stale too: once a transcript no longer fits the
+ * window, EVERY resume of it fails identically, so the continuation is as
+ * unusable as a missing one. Without this the cell wedges permanently — seen
+ * 2026-08-18, when the dev cell answered eight consecutive ticks with
+ * "Prompt is too long" over 2h20m and only a manual group restart cleared it.
+ * Auto-compaction (CLAUDE_CODE_AUTO_COMPACT_WINDOW) is the first line of
+ * defence; this is the recovery for when it has already been overrun.
  */
-const STALE_SESSION_RE = /no conversation found|ENOENT.*\.jsonl|session.*not found/i;
+const STALE_SESSION_RE =
+  /no conversation found|ENOENT.*\.jsonl|session.*not found|prompt is too long|exceeds? the maximum|context (?:window|length) exceeded/i;
 
 export class ClaudeProvider implements AgentProvider {
   readonly supportsNativeSlashCommands = true;

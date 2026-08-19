@@ -275,6 +275,16 @@ export async function runPollLoop(config: PollLoopConfig): Promise<void> {
         continuation = result.continuation;
         setContinuation(config.providerName, continuation);
       }
+      // Same stale-continuation recovery as the catch block below, for turns
+      // that report the failure as an error RESULT instead of throwing. A
+      // context-overflow transcript can never be resumed successfully again,
+      // so keeping it guarantees every later tick fails identically.
+      if (continuation && result.errorResultText
+          && config.provider.isSessionInvalid(new Error(result.errorResultText))) {
+        log(`Unusable session (${continuation}): ${result.errorResultText.slice(0, 80)} — clearing`);
+        continuation = undefined;
+        clearContinuation(config.providerName);
+      }
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
       log(`Query error: ${errMsg}`);
@@ -350,6 +360,13 @@ function formatMessagesWithCommands(messages: MessageInRow[], nativeSlashCommand
 
 interface QueryResult {
   continuation?: string;
+  /**
+   * Text of a turn that ended in an error RESULT rather than a thrown error.
+   * A context-overflow turn arrives this way, so the caller's
+   * `isSessionInvalid` check — which only sees the catch block — would never
+   * be consulted and the poisoned continuation would be resumed forever.
+   */
+  errorResultText?: string;
 }
 
 export async function processQuery(
@@ -372,6 +389,7 @@ export async function processQuery(
   emitsMidTurnText = false,
 ): Promise<QueryResult> {
   let queryContinuation: string | undefined;
+  let errorResultText: string | undefined;
   let done = false;
   let unwrappedNudged = false;
   // Once-per-turn guard for the task-run "<message> block was not delivered"
@@ -570,6 +588,10 @@ export async function processQuery(
           midTurnTail = scan.tail;
         }
       } else if (event.type === 'result') {
+        // Capture the error text BEFORE the delivery branches below, which
+        // skip task runs entirely — and a cell's tick IS a task run, which is
+        // exactly the case that wedged for hours on 2026-08-18.
+        if (event.isError === true && event.text) errorResultText = event.text;
         // A result — with or without text — means the turn is done. Mark
         // the initial batch completed now so the host sweep doesn't see
         // stale 'processing' claims while the query stays open for
@@ -679,7 +701,7 @@ export async function processQuery(
     clearInterval(pollHandle);
   }
 
-  return { continuation: queryContinuation };
+  return { continuation: queryContinuation, errorResultText };
 }
 
 function notifyExchangeComplete(
