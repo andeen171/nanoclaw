@@ -183,6 +183,21 @@ Trabalho em LOTE no board (rotear/editar muitas issues de uma vez) roda no teu
 próprio modelo agora. Se a cadeia estiver saturada, escala pontualmente com
 `ANTHROPIC_MODEL=nc-heavy claude -p "<a tarefa em lote, com a receita GraphQL>"`.
 
+## Célula nenhuma consegue pushar (estado atual)
+
+Medido em 18/08: a imagem do agente tem `git` mas **não tem `gh`**, o cofre do
+OneCLI não tem credencial de GitHub, e o host autentica por
+`gh auth git-credential` contra um keyring que o container não alcança. Logo:
+**nenhuma célula publica branch nem abre PR.** Elas comitam local e para por aí.
+
+Foi assim que 16 branches de trabalho real ficaram presas no disco por dias sem
+ninguém notar — a célula dizia "commit feito", e isso virou "está em master".
+
+Enquanto o andeen não puser uma credencial GitHub no cofre (host-pattern
+`github.com`), o contrato é: célula corrige, roda os checks LOCALMENTE, comita e
+reporta o sha. Publicação é passo do host, fora do turno da célula. Se uma célula
+te disser que pushou, isso é falso até prova em `git branch -r --contains <sha>`.
+
 ## Relatar: o que tu não conferiste, tu não afirmas
 
 Em 18/08 tu disseste ao andeen que 25 issues tinham sido "commitadas direto em
