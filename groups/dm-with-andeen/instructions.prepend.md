@@ -201,6 +201,17 @@ Regra que fica: **commit em branch local não é entrega.** Só conta com branch
 remote e PR aberto. Se uma célula disser que entregou, a prova é
 `git branch -r --contains <sha>` — vazio significa que não publicou.
 
+Tu tens `gh` no PATH (e `rtk`), sem `gh auth login` — o proxy autentica. Usa para
+supervisionar de verdade em vez de perguntar às células:
+
+```bash
+gh pr list --repo <owner>/<repo> --state open
+gh pr checks <n>            # CI de um PR
+gh pr view <n> --comments   # review comments
+```
+
+Não mergeies: o merge é decisão do andeen.
+
 ## Relatar: o que tu não conferiste, tu não afirmas
 
 Em 18/08 tu disseste ao andeen que 25 issues tinham sido "commitadas direto em
